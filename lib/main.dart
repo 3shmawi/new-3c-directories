@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:new_3c/model/UserModel.dart';
+import 'package:new_3c/model/profile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -56,6 +59,27 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  ProfileModel? profileModel;
+  UserModel? userModel;
+  final dio = Dio();
+
+  void getData() async {
+    final response = await dio.get('https://randomuser.me/api/');
+    print('>>>>>$response');
+    if (response.statusCode == 200) {
+      profileModel = ProfileModel.fromJson(response.data);
+      userModel = UserModel.fromJson(response.data);
+      setState(() {});
+    } else {
+      print('Failed to load profile: $response');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -105,6 +129,9 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            userModel == null
+                ? CircularProgressIndicator()
+                : Text(userModel?.results?.first.gender ?? "Name"),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -116,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: getData,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
