@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "499845253230",
+    "project_id": "cpatrick-7971a",
+    "storage_bucket": "cpatrick-7971a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499845253230:android:18e70c33768847c215be7f",
+        "android_client_info": {
+          "package_name": "com.ashmawi.new_3c"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtiUbhyHWuJVfEULDEwU38_nK1q91NgOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
