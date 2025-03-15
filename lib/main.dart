@@ -1,8 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 
+///Authentication
+// [login - register - logout]
+
+///FireStore
+// [GET - UPDATE - DELETE - SET - ADD - STREAM]
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -64,15 +70,64 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  final database = FirebaseFirestore.instance;
+
   void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+    database.collection("ISLAM").doc("#").collection("counter").doc("#").set({
+      "count": ++_counter,
+    }, SetOptions(merge: true)).then((v) {
+      setState(() {});
     });
+  }
+
+  void _getCounter() {
+    database
+        .collection("ISLAM")
+        .doc("#")
+        .collection("counter")
+        .doc("#")
+        .get()
+        .then((snapshot) {
+      if (snapshot.exists) {
+        setState(() {
+          _counter = snapshot.data()!["count"] as int;
+        });
+      } else {
+        setState(() {
+          _counter = 0;
+        });
+      }
+    }).catchError((error) {
+      print("Error getting documents: $error");
+    });
+  }
+
+  void _deleteCounter() {
+    database
+        .collection("ISLAM")
+        .doc("#")
+        .collection("counter")
+        .doc("#")
+        .delete()
+        .then((v) {
+      // _getCounter();
+    });
+  }
+
+  Stream<int> _getStreamData() {
+    return database
+        .collection("ISLAM")
+        .doc("#")
+        .collection("counter")
+        .doc("#")
+        .snapshots()
+        .map((snapshot) => snapshot.data()?['count'] ?? 0);
+  }
+
+  @override
+  void initState() {
+    // _getCounter();
+    super.initState();
   }
 
   @override
@@ -115,17 +170,38 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            StreamBuilder<int>(
+                stream: _getStreamData(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Text(
+                      'Loading...',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    );
+                  }
+                  final count = snapshot.data;
+                  return Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  );
+                }),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          FloatingActionButton(
+            onPressed: _deleteCounter,
+            tooltip: 'Delete',
+            child: const Icon(Icons.delete),
+          ),
+          FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+        ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
