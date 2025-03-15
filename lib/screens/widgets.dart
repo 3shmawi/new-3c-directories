@@ -1,0 +1,81 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:new_3c/model/news.dart';
+
+class NewsItem extends StatelessWidget {
+  const NewsItem(this.articles, {super.key});
+
+  final Articles articles;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CachedNetworkImage(
+              imageUrl: articles.urlToImage ??
+                  "https://images.unsplash.com/photo-1740832780965-0982fb5dd8d8?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwzfHx8ZW58MHx8fHx8",
+              progressIndicatorBuilder: (context, url, downloadProgress) =>
+                  LinearProgressIndicator(value: downloadProgress.progress),
+              height: 158,
+              width: 110,
+              fit: BoxFit.cover,
+              errorWidget: (context, url, error) => Icon(Icons.error),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize
+                      .min, // ✅ Prevents Column from taking extra space
+                  children: [
+                    Text(
+                      articles.title ?? "Title",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Divider(),
+                    Expanded(
+                      child: Text(
+                        articles.content ??
+                            articles.description ??
+                            "No Description!",
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Divider(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            articles.author ?? "",
+                            maxLines: 1,
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ),
+                        Spacer(),
+                        Text(
+                          articles.publishedAt ?? "",
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}

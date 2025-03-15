@@ -1,9 +1,10 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:new_3c/data/remote.dart';
 import 'package:new_3c/model/UserModel.dart';
 import 'package:new_3c/model/profile.dart';
+import 'package:new_3c/screens/home.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -19,11 +20,11 @@ class MyApp extends StatelessWidget {
         // This is the theme of your application.
         //
         // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
+        // the application has a purple toolbar. Then, without quitting the config,
         // try changing the seedColor in the colorScheme below to Colors.green
         // and then invoke "hot reload" (save your changes or press the "hot
         // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
+        // the command line to start the config).
         //
         // Notice that the counter didn't reset back to zero; the application
         // state is not lost during the reload. To reset the state, use hot
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: NewsHomeScreen(),
     );
   }
 }
@@ -61,18 +62,10 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   ProfileModel? profileModel;
   UserModel? userModel;
-  final dio = Dio();
 
-  void getData() async {
-    final response = await dio.get('https://randomuser.me/api/');
-    print('>>>>>$response');
-    if (response.statusCode == 200) {
-      profileModel = ProfileModel.fromJson(response.data);
-      userModel = UserModel.fromJson(response.data);
-      setState(() {});
-    } else {
-      print('Failed to load profile: $response');
-    }
+  getData() async {
+    final news = await APIHandler.getEverythingNews(word: "tesla", day: 10);
+    print(news.totalResults);
   }
 
   @override
