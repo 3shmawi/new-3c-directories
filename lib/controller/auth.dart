@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/toast.dart';
 import 'package:new_3c/models/user.dart';
+import 'package:new_3c/services/local_storage.dart';
 
 // Define Authentication States
 abstract class AuthState {}
@@ -25,6 +26,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   final _auth = FirebaseAuth.instance;
   final _database = FirebaseFirestore.instance;
+  static String myId = CacheHelper.getData(key: "uid") ?? 'unauthorized';
 
   // TextEditingControllers for the forms
   final usernameController = TextEditingController();
@@ -63,6 +65,8 @@ class AuthCubit extends Cubit<AuthState> {
     _auth
         .signInWithEmailAndPassword(email: email, password: password)
         .then((response) {
+      CacheHelper.saveData(
+          key: "uid", value: response.user?.uid ?? 'unauthorized');
       ToastHandler.showSuccess("You logged in successfully");
       emit(AuthAuthenticated());
     }).catchError((error) {
@@ -95,6 +99,9 @@ class AuthCubit extends Cubit<AuthState> {
       _auth
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((response) async {
+        CacheHelper.saveData(
+            key: "uid", value: response.user?.uid ?? 'unauthorized');
+
         await _createUser(response.user?.uid ?? "guest");
         ToastHandler.showSuccess("You registered successfully");
         emit(AuthAuthenticated());
@@ -126,6 +133,17 @@ class AuthCubit extends Cubit<AuthState> {
         .collection("users")
         .doc(id)
         .set(newUser.toJson());
+  }
+
+  Future<bool> logout() async {
+    try {
+      _auth.signOut();
+      CacheHelper.removeData(key: "uid");
+      return true;
+    } catch (error) {
+      ToastHandler.showError("Cant log out $error");
+      return false;
+    }
   }
 
   @override

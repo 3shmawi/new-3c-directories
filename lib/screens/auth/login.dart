@@ -4,6 +4,7 @@ import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/screens/auth/register.dart';
 
 import '../../controller/auth.dart';
+import '../chats/home.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -16,10 +17,9 @@ class LoginPage extends StatelessWidget {
       appBar: AppBar(title: const Text('Login')),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is AuthAuthenticated) {}
+          if (state is AuthAuthenticated) {
+            context.pushReplacementAll(ChatsScreen());
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
