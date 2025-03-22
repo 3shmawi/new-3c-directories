@@ -10,8 +10,10 @@ class NewsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 5,
       clipBehavior: Clip.antiAliasWithSaveLayer,
       child: IntrinsicHeight(
+        //calculate the height of the child
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -30,8 +32,7 @@ class NewsItem extends StatelessWidget {
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize
-                      .min, // ✅ Prevents Column from taking extra space
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       articles.title ?? "Title",
@@ -47,7 +48,7 @@ class NewsItem extends StatelessWidget {
                       child: Text(
                         articles.content ??
                             articles.description ??
-                            "No Description!",
+                            "No Description! or Content!",
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -62,7 +63,7 @@ class NewsItem extends StatelessWidget {
                             style: TextStyle(fontSize: 14),
                           ),
                         ),
-                        Spacer(),
+                        const SizedBox(width: 10),
                         Text(
                           articles.publishedAt ?? "",
                           style: TextStyle(fontSize: 12, color: Colors.grey),
