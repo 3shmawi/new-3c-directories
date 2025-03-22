@@ -20,8 +20,16 @@ class ChatCubit extends Cubit<ChatStates> {
   final myId = AuthCubit.myId;
   final messageCtrl = TextEditingController();
 
-//send message
-  void sendMessage(String receiverId) async {
+  void sendMessage(String receiverId, bool isNewChat) async {
+    if (isNewChat) {
+      await _sendFirstMessage(receiverId);
+    } else {
+      await _sendMessage(receiverId);
+    }
+  }
+
+  // Send first message (also creates chat doc)
+  Future<void> _sendFirstMessage(String receiverId) async {
     final message = messageCtrl.text.trim();
     if (message.isEmpty) {
       ToastHandler.showInfo("Please enter a message");
@@ -33,48 +41,103 @@ class ChatCubit extends Cubit<ChatStates> {
           "You are not authorized to send messages\nPlease login first");
       return;
     }
-    final newId = DateTime.now().toIso8601String();
-    final messageModel = MessageModel(
-      id: newId,
-      text: message,
-      sendTime: newId,
-      updatedTime: newId,
-      senderRef:
-          database.collection("AMRO").doc("#").collection("users").doc(myId),
-      receiverRef: database
-          .collection("AMRO")
-          .doc("#")
-          .collection("users")
-          .doc(receiverId),
-    );
 
-    await database
+    final chatRef = database
         .collection("AMRO")
         .doc("#")
         .collection("chats")
-        .doc(receiverId)
+        .doc(receiverId);
+    final newMessageId = DateTime.now().toIso8601String();
+
+    final senderRef =
+        database.collection("AMRO").doc("#").collection("users").doc(myId);
+    final receiverRef = database
+        .collection("AMRO")
+        .doc("#")
+        .collection("users")
+        .doc(receiverId);
+
+    final messageModel = MessageModel(
+      id: newMessageId,
+      text: message,
+      sendTime: newMessageId,
+      updatedTime: newMessageId,
+      senderRef: senderRef,
+      receiverRef: receiverRef,
+    );
+
+    final newChat = ChatModel(
+      id: receiverId,
+      senderRef: senderRef,
+      receiverRef: receiverRef,
+      lastMessage: messageModel.text,
+      messageDate: messageModel.sendTime,
+      isMessageRead: false,
+    );
+
+    await chatRef
         .collection("messages")
         .doc(messageModel.id)
         .set(messageModel.toJson());
 
     messageCtrl.clear();
-    await database
+    await chatRef.set(newChat.toJson(), SetOptions(merge: true));
+  }
+
+  // Send message (chat already exists)
+  Future<void> _sendMessage(String receiverId) async {
+    final message = messageCtrl.text.trim();
+    if (message.isEmpty) {
+      ToastHandler.showInfo("Please enter a message");
+      return;
+    }
+
+    if (myId == 'unauthorized') {
+      ToastHandler.showError(
+          "You are not authorized to send messages\nPlease login first");
+      return;
+    }
+
+    final newMessageId = DateTime.now().toIso8601String();
+    final timestamp = FieldValue.serverTimestamp();
+
+    final senderRef =
+        database.collection("AMRO").doc("#").collection("users").doc(myId);
+    final receiverRef = database
+        .collection("AMRO")
+        .doc("#")
+        .collection("users")
+        .doc(receiverId);
+
+    final messageModel = MessageModel(
+      id: newMessageId,
+      text: message,
+      sendTime: newMessageId,
+      updatedTime: newMessageId,
+      senderRef: senderRef,
+      receiverRef: receiverRef,
+    );
+
+    final chatRef = database
         .collection("AMRO")
         .doc("#")
         .collection("chats")
-        .doc(receiverId)
-        .update({
+        .doc(receiverId);
+
+    await chatRef
+        .collection("messages")
+        .doc(messageModel.id)
+        .set(messageModel.toJson());
+
+    messageCtrl.clear();
+
+    await chatRef.update({
       "last_message": messageModel.text,
-      "message_date": messageModel.sendTime,
+      "message_date": timestamp,
     });
   }
 
-  void sendFirstMessage(String receiverId) {
-    sendMessage(receiverId);
-    //todo implemnent send first message
-  }
-
-//get messages
+  // Stream messages
   Stream<List<MessageModel>> getMessages(String receiverId) {
     return database
         .collection("AMRO")
@@ -82,14 +145,14 @@ class ChatCubit extends Cubit<ChatStates> {
         .collection("chats")
         .doc(receiverId)
         .collection("messages")
-        .orderBy("send_time", descending: true)
+        .orderBy("send_time", descending: false)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => MessageModel.fromJson(doc.data()))
             .toList());
   }
 
-//get chats
+  // Stream chats
   Stream<List<ChatModel>> getChats() {
     final senderRef =
         database.collection("AMRO").doc("#").collection("users").doc(myId);
@@ -98,14 +161,14 @@ class ChatCubit extends Cubit<ChatStates> {
         .doc("#")
         .collection("chats")
         .where("sender_ref", isEqualTo: senderRef)
-        .orderBy("send_time", descending: true)
+        .orderBy("message_date", descending: false)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => ChatModel.fromJson(doc.data()))
             .toList());
   }
 
-  //all users
+  // Users
   List<UserModel> users = [];
 
   void refreshGetUsers() {
@@ -114,16 +177,13 @@ class ChatCubit extends Cubit<ChatStates> {
   }
 
   void getAllUsers() async {
-    if (users.isNotEmpty) {
-      return;
-    }
+    if (users.isNotEmpty) return;
+
     final response =
         await database.collection("AMRO").doc("#").collection("users").get();
 
     for (final doc in response.docs) {
-      if (doc.id == myId) {
-        continue;
-      }
+      if (doc.id == myId) continue;
       users.add(UserModel.fromJson(doc.data()));
     }
 

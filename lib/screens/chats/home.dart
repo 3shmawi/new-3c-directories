@@ -35,6 +35,13 @@ class ChatsScreen extends StatelessWidget {
             return ListView.separated(
               itemBuilder: (context, index) => Card(
                 child: ListTile(
+                  onTap: () async {
+                    final receiver = await chats[index].getReceiverDetails();
+                    context.push(BlocProvider(
+                      create: (context) => ChatCubit(),
+                      child: ChatsDetails(receiver, false),
+                    ));
+                  },
                   title: Text(chats[index].lastMessage),
                   subtitle: Text(chats[index].receiverRef.id),
                 ),
@@ -76,7 +83,7 @@ class UserListUi extends StatelessWidget {
                   onTap: () {
                     context.push(BlocProvider(
                       create: (context) => ChatCubit(),
-                      child: ChatsDetails(users[index]),
+                      child: ChatsDetails(users[index], true),
                     ));
                   },
                   title: Text(users[index].name),

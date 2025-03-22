@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:new_3c/controller/auth.dart';
 import 'package:new_3c/controller/chat.dart';
 import 'package:new_3c/models/user.dart';
@@ -7,9 +8,10 @@ import 'package:new_3c/models/user.dart';
 import '../../models/message.dart';
 
 class ChatsDetails extends StatelessWidget {
-  const ChatsDetails(this.receiver, {super.key});
+  const ChatsDetails(this.receiver, this.isNewChat, {super.key});
 
   final UserModel receiver;
+  final bool isNewChat;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +70,7 @@ class ChatsDetails extends StatelessWidget {
                                 ),
                                 SizedBox(height: 5),
                                 Text(
-                                  message.sendTime.substring(11, 16),
+                                  daysBetween(message.sendTime),
                                   // Display HH:MM time format
                                   style: TextStyle(
                                       fontSize: 12,
@@ -106,7 +108,7 @@ class ChatsDetails extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.send, color: Colors.blue),
                       onPressed: () {
-                        cubit.sendMessage(receiver.id);
+                        cubit.sendMessage(receiver.id, isNewChat);
                       },
                     ),
                   ],
@@ -117,5 +119,30 @@ class ChatsDetails extends StatelessWidget {
         },
       ),
     );
+  }
+
+  String daysBetween(String time) {
+    final date = DateTime.parse(time);
+    if (DateTime.now().difference(date).inDays <= 5) {
+      if ((DateTime.now().difference(date).inHours / 24).round() == 0) {
+        if (DateTime.now().difference(date).inHours == 0) {
+          if (DateTime.now().difference(date).inMinutes == 0) {
+            return 'now';
+          } else {
+            return '${DateTime.now().difference(date).inMinutes.toString()}m';
+          }
+        } else {
+          return '${DateTime.now().difference(date).inHours.toString()}h';
+        }
+      } else {
+        return (' ${(DateTime.now().difference(date).inHours / 24).round().toString()}d');
+      }
+    } else {
+      return _formatDate(date);
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('dd MMMM yyyy').format(date);
   }
 }
