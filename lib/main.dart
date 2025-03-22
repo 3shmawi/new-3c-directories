@@ -110,7 +110,9 @@ class _MyHomePageState extends State<MyHomePage> {
         .doc("#")
         .delete()
         .then((v) {
-      // _getCounter();
+      setState(() {
+        _counter = 0;
+      });
     });
   }
 
