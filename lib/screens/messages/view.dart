@@ -16,7 +16,16 @@ class ChatsDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chat")),
+      appBar: AppBar(
+          title: Row(
+        children: [
+          CircleAvatar(
+            backgroundImage: NetworkImage(receiver.avatar),
+          ),
+          SizedBox(width: 10),
+          Text(receiver.name),
+        ],
+      )),
       body: BlocBuilder<ChatCubit, ChatStates>(
         builder: (context, state) {
           final cubit = context.read<ChatCubit>();

@@ -34,8 +34,6 @@ class AuthCubit extends Cubit<AuthState> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  final formKey = GlobalKey<FormState>();
-
   // Toggle for password visibility
   bool isPasswordHidden = true;
 
@@ -145,12 +143,12 @@ class AuthCubit extends Cubit<AuthState> {
       return false;
     }
   }
-
-  @override
-  Future<void> close() {
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    return super.close();
-  }
+  //
+  // @override
+  // Future<void> close() {
+  //   emailController.dispose();
+  //   passwordController.dispose();
+  //   confirmPasswordController.dispose();
+  //   return super.close();
+  // }
 }

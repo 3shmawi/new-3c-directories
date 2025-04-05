@@ -189,4 +189,16 @@ class ChatCubit extends Cubit<ChatStates> {
 
     emit(GetUsersState());
   }
+
+  Future<UserModel> getUser(String id) async {
+    final userData = (await database
+            .collection("AMRO")
+            .doc("#")
+            .collection("users")
+            .doc(id)
+            .get())
+        .data();
+
+    return UserModel.fromJson(userData!);
+  }
 }
