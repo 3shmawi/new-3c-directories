@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/auth/login.dart';
+import 'package:new_3c/screens/auth/login.dart';
 
 import 'firebase_options.dart';
 
