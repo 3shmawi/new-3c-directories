@@ -37,6 +37,8 @@ dependencies:
   dio: ^5.8.0+1
   cached_network_image: ^3.4.1
   flutter_bloc: ^9.1.0
+  shimmer: ^3.0.0
+  skeletonizer: ^1.4.3
 
   
 dev_dependencies:

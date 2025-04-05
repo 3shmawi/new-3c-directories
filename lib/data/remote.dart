@@ -10,9 +10,7 @@ class APIHandler {
 
   static Future<NewsModel> getEverythingNews({
     required String word,
-    int? year,
-    int? month,
-    int? day,
+    int? subtractDays,
   }) async {
     try {
       final response = await _dio.get(
@@ -20,8 +18,7 @@ class APIHandler {
           "everything",
           {
             "q": word,
-            "from":
-                "${year ?? DateTime.now().year}-${month ?? DateTime.now().month}-${day ?? DateTime.now().day}",
+            "from": getDate(days: subtractDays),
             "sortBy": "publishedAt",
           },
         ),
@@ -34,5 +31,10 @@ class APIHandler {
     } on DioException catch (error) {
       throw Exception('Failed to get news: ${error.message}');
     }
+  }
+
+  static String getDate({int? days}) {
+    final now = DateTime.now().subtract(Duration(days: days ?? 1));
+    return "${now.year}-${now.month}-${now.day}";
   }
 }
