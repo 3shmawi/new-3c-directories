@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl/login_cubit.dart';
 import 'package:new_3c/screens/auth/sign_up.dart';
-
-import '../home/view.dart';
+import 'package:new_3c/screens/layout.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -17,7 +16,7 @@ class LoginScreen extends StatelessWidget {
         listener: (context, state) {
           if (state is LoginSuccessState) {
             context.showSuccess("You have logged in successfully");
-            context.pushAndRemoveUntil(const HomeScreen());
+            context.pushAndRemoveUntil(const LayoutScreen());
           } else if (state is LoginErrorState) {
             context.showError(state.error);
           }

@@ -1,5 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/controller/layout_ctrl/layout_cubit.dart';
+import 'package:new_3c/controller/settings_ctrl/settings_cubit.dart';
 import 'package:new_3c/screens/auth/login.dart';
 
 import 'firebase_options.dart';
@@ -14,7 +17,19 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => LayoutCubit(),
+        ),
+        BlocProvider(
+          create: (_) => SettingsCubit(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,8 +37,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: LoginScreen(),
+    return BlocBuilder<SettingsCubit, SettingsStates>(
+      buildWhen: (_, current) => current is ChangeThemeState,
+      builder: (context, state) {
+        final isDark = SettingsCubit.get(context).isDark;
+        return MaterialApp(
+          theme: ThemeData.light(useMaterial3: true),
+          darkTheme: ThemeData.dark(useMaterial3: true),
+          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+          home: LoginScreen(),
+        );
+      },
     );
   }
 }
