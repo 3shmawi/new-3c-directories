@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 
 import '../data/remote.dart';
 import '../model/news.dart';
@@ -8,7 +9,9 @@ class NewsCubit extends Cubit<NewsStates> {
   NewsCubit() : super(NewsInitialState());
 
   final searchCtrl = TextEditingController();
-  bool isSearchEnabled = true;
+  bool isSearchEnabled = false;
+
+  Box<Articles> get box => Hive.box<Articles>('news1');
 
   void toggleSearchEnabled() {
     isSearchEnabled = !isSearchEnabled;
@@ -23,18 +26,28 @@ class NewsCubit extends Cubit<NewsStates> {
     emit(NewsLoadingState());
 
     try {
-      final response = await APIHandler.getEverythingNews(
-        word: searchCtrl.text,
-      );
-
+      final response =
+          await APIHandler.getEverythingNews(word: searchCtrl.text);
       final articles = response.articles ?? [];
+
       if (articles.isNotEmpty) {
+        await box.clear();
+        await box.addAll(articles);
         emit(NewsSuccessState(articles));
       } else {
         emit(NewsEmptyState());
       }
     } catch (e) {
       emit(NewsErrorState(e.toString()));
+    }
+  }
+
+  void getNewsDataFromHive() {
+    final articles = box.values.toList();
+    if (articles.isNotEmpty) {
+      emit(NewsSuccessState(articles));
+    } else {
+      emit(NewsEmptyState());
     }
   }
 }

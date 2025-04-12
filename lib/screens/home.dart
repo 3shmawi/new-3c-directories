@@ -86,9 +86,7 @@ class NewsHomeScreen extends StatelessWidget {
                       builder: (context, state) {
                         switch (state) {
                           case NewsEmptyState():
-                            return Center(
-                              child: Text("no articles founded"),
-                            );
+                            return EmptyData();
                           case NewsLoadingState():
                             return Skeletonizer(
                               enabled: true,
@@ -117,7 +115,7 @@ class NewsHomeScreen extends StatelessWidget {
                             );
                         }
 
-                        return SizedBox.shrink();
+                        return EmptyData();
                       },
                     ),
                   ),

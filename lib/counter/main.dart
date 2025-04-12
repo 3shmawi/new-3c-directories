@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ThemeCubit(),
+      create: (context) => ThemeCubit(false),
       child: BlocBuilder<ThemeCubit, bool>(
         builder: (context, isDark) {
           return MaterialApp(

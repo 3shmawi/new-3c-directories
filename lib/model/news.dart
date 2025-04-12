@@ -1,3 +1,7 @@
+import 'package:hive/hive.dart';
+
+part 'news.g.dart';
+
 class NewsModel {
   NewsModel({
     this.status,
@@ -15,6 +19,7 @@ class NewsModel {
       });
     }
   }
+
   String? status;
   int? totalResults;
   List<Articles>? articles;
@@ -30,9 +35,38 @@ class NewsModel {
   }
 }
 
+/*
+part 'person.g.dart'; // Will be generated
+
+@HiveType(typeId: 0)
+class Person {
+  @HiveField(0)
+  String name;
+
+  @HiveField(1)
+  int age;
+
+  Person({required this.name, required this.age});
+}
+ */
+@HiveType(typeId: 0)
 class Articles {
+  @HiveField(0)
+  String? author;
+  @HiveField(1)
+  String? title;
+  @HiveField(2)
+  String? description;
+  @HiveField(3)
+  String? url;
+  @HiveField(4)
+  String? urlToImage;
+  @HiveField(5)
+  String? publishedAt;
+  @HiveField(6)
+  String? content;
+
   Articles({
-    this.source,
     this.author,
     this.title,
     this.description,
@@ -43,7 +77,6 @@ class Articles {
   });
 
   Articles.fromJson(dynamic json) {
-    source = json['source'] != null ? Source.fromJson(json['source']) : null;
     author = json['author'];
     title = json['title'];
     description = json['description'];
@@ -52,20 +85,9 @@ class Articles {
     publishedAt = json['publishedAt'];
     content = json['content'];
   }
-  Source? source;
-  String? author;
-  String? title;
-  String? description;
-  String? url;
-  String? urlToImage;
-  String? publishedAt;
-  String? content;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
-    if (source != null) {
-      map['source'] = source?.toJson();
-    }
     map['author'] = author;
     map['title'] = title;
     map['description'] = description;
@@ -87,6 +109,7 @@ class Source {
     id = json['id'];
     name = json['name'];
   }
+
   dynamic id;
   String? name;
 
