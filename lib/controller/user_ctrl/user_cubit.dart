@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/constants.dart';
 import 'package:new_3c/models/user.dart';
 
-userCubit(context) => BlocProvider.of<UserCubit>(context);
+UserCubit userCubit(context) => BlocProvider.of<UserCubit>(context);
 
 class UserCubit extends Cubit<UserStates> {
   UserCubit() : super(UserInitialState());
@@ -109,6 +109,23 @@ class UserCubit extends Cubit<UserStates> {
             users.email.toLowerCase().contains(query.toLowerCase()) ||
             users.phone.toLowerCase().contains(query.toLowerCase()))
         .toList();
+  }
+
+  //isOnline
+  Stream<bool> isOnline(String uid) {
+    final userDoc =
+        AppConstants.collectionPath.collection("users").doc(uid).snapshots();
+    return userDoc.map((user) => user.data()!["is_online"]);
+  }
+
+  void updateUserStatus(bool isOnline) async {
+    if (!isUserLoggedIn()) {
+      return;
+    }
+    final userDoc = AppConstants.collectionPath
+        .collection("users")
+        .doc(_auth.currentUser!.uid);
+    await userDoc.update({"is_online": isOnline});
   }
 }
 

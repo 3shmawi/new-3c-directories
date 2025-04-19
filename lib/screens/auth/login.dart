@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl/login_cubit.dart';
+import 'package:new_3c/controller/user_ctrl/user_cubit.dart';
 import 'package:new_3c/screens/auth/sign_up.dart';
 import 'package:new_3c/screens/layout.dart';
 
@@ -16,6 +17,7 @@ class LoginScreen extends StatelessWidget {
         listener: (context, state) {
           if (state is LoginSuccessState) {
             context.showSuccess("You have logged in successfully");
+            userCubit(context).getMyUserData();
             context.pushAndRemoveUntil(const LayoutScreen());
           } else if (state is LoginErrorState) {
             context.showError(state.error);
@@ -37,6 +39,7 @@ class LoginScreen extends StatelessWidget {
                         child: const Text(
                           'Login Screen',
                           style: TextStyle(
+                            fontFamily: "Merienda",
                             fontSize: 50,
                             color: Colors.cyan,
                             fontWeight: FontWeight.bold,
@@ -48,6 +51,7 @@ class LoginScreen extends StatelessWidget {
                         child: const Text(
                           'Welcome back',
                           style: TextStyle(
+                            fontFamily: "Merienda",
                             fontSize: 25,
                             color: Colors.cyan,
                           ),
@@ -93,12 +97,13 @@ class LoginScreen extends StatelessWidget {
                       const SizedBox(height: 30),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            minimumSize: Size(double.infinity, 45),
-                            backgroundColor: Colors.cyan,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )),
+                          minimumSize: Size(double.infinity, 45),
+                          backgroundColor: Colors.cyan,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                         onPressed:
                             state is LoginLoadingState ? null : cubit.login,
                         child: const Text("LOGIN"),
@@ -112,7 +117,7 @@ class LoginScreen extends StatelessWidget {
                             onPressed: () {
                               context.pushReplacement(const SignUpScreen());
                             },
-                            child: Text("SIGNUP"),
+                            child: Text("Create one!"),
                           ),
                         ],
                       )

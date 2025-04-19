@@ -13,7 +13,11 @@ class LayoutScreen extends StatelessWidget {
         final cubit = layoutCubit(context);
         return Scaffold(
           appBar: AppBar(
-            title: Text("ISLAM<CHAT>"),
+            title: Text(
+              "ISLAM<CHAT/>",
+              style: TextStyle(fontFamily: "Merienda"),
+            ),
+            centerTitle: false,
           ),
           body: PageView.builder(
             controller: cubit.pageCtrl,

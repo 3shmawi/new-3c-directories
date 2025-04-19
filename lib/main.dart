@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/controller/layout_ctrl/layout_cubit.dart';
 import 'package:new_3c/controller/settings_ctrl/settings_cubit.dart';
+import 'package:new_3c/controller/user_ctrl/user_cubit.dart';
 import 'package:new_3c/screens/auth/login.dart';
 
 import 'firebase_options.dart';
@@ -22,6 +23,9 @@ void main() async {
       providers: [
         BlocProvider(
           create: (_) => LayoutCubit(),
+        ),
+        BlocProvider(
+          create: (_) => UserCubit()..getMyUserData(),
         ),
         BlocProvider(
           create: (_) => SettingsCubit(),
