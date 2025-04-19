@@ -25,6 +25,7 @@ class CountriesView extends StatelessWidget {
         builder: (context, state) {
           return switch (state) {
             InitialState() => Center(child: CircularProgressIndicator()),
+            Loading() => Center(child: CircularProgressIndicator()),
             Data() => ListView.builder(
                 itemCount: state.countries.length,
                 itemBuilder: (context, index) {

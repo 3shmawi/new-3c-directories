@@ -9,7 +9,7 @@ class CountriesCubit extends Cubit<CountriesState> {
   final dio = Dio();
 
   void getCountries() async {
-    emit(InitialState());
+    emit(Loading());
     try {
       final response = await dio.get("https://restcountries.com/v3.1/all");
       emit(Data(response.data));
@@ -26,6 +26,8 @@ class CountriesCubit extends Cubit<CountriesState> {
 sealed class CountriesState {}
 
 class InitialState extends CountriesState {}
+
+class Loading extends CountriesState {}
 
 class Data extends CountriesState {
   final List countries;

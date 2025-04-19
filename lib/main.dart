@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/countries/cubit.dart';
 import 'package:new_3c/theme/theme_cubit.dart';
 
-// import 'package:new_3c/profile/ui.dart';
-
-import 'countries/ui.dart';
+import 'dog_image/ui.dart';
 
 // import 'dog_image/ui.dart';
 
@@ -35,7 +33,7 @@ class MyApp extends StatelessWidget {
           // home: ProfileScreen(),
           home: BlocProvider(
             create: (context) => CountriesCubit()..getCountries(),
-            child: CountriesView(),
+            child: GetDogImage(),
           ),
         );
       },
