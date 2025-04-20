@@ -37,6 +37,7 @@ class NewsHomeScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 BlocBuilder<NewsCubit, NewsStates>(
                   buildWhen: (_, current) => current is ToggleSearchState,
