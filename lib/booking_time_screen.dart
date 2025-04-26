@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/app/extensions/localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/queue_provider.dart';
-import '../utils/app_localizations.dart';
 import 'booking_confirmation_screen.dart';
 
 class BookingTimeScreen extends StatefulWidget {
@@ -46,103 +46,99 @@ class _BookingTimeScreenState extends State<BookingTimeScreen> {
   @override
   Widget build(BuildContext context) {
     // final languageProvider = Provider.of<LanguageProvider>(context);
-    final localizations = AppLocalizations.of(context);
-    final isArabic = true;
 
-    return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(localizations.translate('book_for_later')),
-          elevation: 0,
-        ),
-        body: Column(
-          children: [
-            // Header section
-            Container(
-              height: 150,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.translate('book_for_later')),
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          // Header section
+          Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(
+                  "https://images.pexels.com/photos/3846076/pexels-photo-3846076.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                ),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.5),
+                  BlendMode.darken,
+                ),
+              ),
+              color: Theme.of(context).colorScheme.primary, // Fallback color
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  context.translate('select_date'),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _formatDate(_selectedDate),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                ),
+              ],
+            ),
+          ),
+
+          // Date selector
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            child: _buildDateSelector(context),
+          ),
+
+          // Time slots section
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.translate('select_time'),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                _buildTimeGrid(context),
+              ],
+            ),
+          ),
+
+          const Spacer(),
+
+          // Bottom action button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
               width: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                    "https://pixabay.com/get/gd839ba9df562425768da6aa64ad7926bf37711edd874bf05a813f64e5c6393c80b50b87a1593d4a4b708871bd8a5c79ae4e49fda8bcc7d66138f0d2498338bc7_1280.jpg",
-                  ),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.5),
-                    BlendMode.darken,
-                  ),
+              child: ElevatedButton(
+                onPressed: _selectedTime != null
+                    ? () => _handleBooking(context)
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.tertiary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  disabledBackgroundColor: Colors.grey.withOpacity(0.3),
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    localizations.translate('select_date'),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _formatDate(_selectedDate),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Date selector
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              child: _buildDateSelector(context),
-            ),
-
-            // Time slots section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    localizations.translate('select_time'),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTimeGrid(context),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-
-            // Bottom action button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _selectedTime != null
-                      ? () => _handleBooking(context)
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.tertiary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    disabledBackgroundColor: Colors.grey.withOpacity(0.3),
-                  ),
-                  child: Text(
-                    localizations.translate('continue'),
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                child: Text(
+                  context.translate('continue'),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -368,9 +364,8 @@ class _BookingTimeScreenState extends State<BookingTimeScreen> {
         ),
       );
     }).catchError((error) {
-      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${localizations.translate('error')}: $error')),
+        SnackBar(content: Text('${context.translate('error')}: $error')),
       );
     });
   }

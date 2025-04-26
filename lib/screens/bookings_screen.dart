@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import '../../app/extensions/localizations.dart';
 import '../../models/booking.dart';
 import '../../providers/queue_provider.dart';
-import '../../utils/app_localizations.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({Key? key}) : super(key: key);
@@ -16,46 +15,45 @@ class _BookingsScreenState extends State<BookingsScreen> {
   @override
   Widget build(BuildContext context) {
     final queueProvider = Provider.of<QueueProvider>(context);
-    // final languageProvider = Provider.of<LanguageProvider>(context);
-    final localizations = AppLocalizations.of(context);
-    final isArabic = true;
     final bookings = queueProvider.allBookings;
 
-    return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(localizations.translate('your_bookings')),
-          elevation: 0,
-        ),
-        body: bookings.isEmpty
-            ? _buildEmptyState(context)
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: bookings.length,
-                itemBuilder: (context, index) {
-                  return _buildBookingCard(context, bookings[index]);
-                },
-              ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.translate('your_bookings')),
+        elevation: 0,
       ),
+      body: bookings.isEmpty
+          ? _buildEmptyState(context)
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: bookings.length,
+              itemBuilder: (context, index) {
+                return _buildBookingCard(context, bookings[index]);
+              },
+            ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.network(
-            "https://pixabay.com/get/gb525660afbcdf9cd32e62f1b0df1354176f631593ee757ab4e7334f9d01cc63f01a1e71f50ee7fa6ebed8792f40f3dad43fd45b5b6de93401580d4485ff281b5_1280.png",
+            "https://images.pexels.com/photos/7319307/pexels-photo-7319307.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
             height: 200,
             width: 200,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.calendar_today,
+                size: 100,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+              );
+            },
           ),
           const SizedBox(height: 24),
           Text(
-            localizations.translate('no_bookings'),
+            context.translate('no_bookings'),
             style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
@@ -63,7 +61,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Text(
-              localizations.translate('book_appointment'),
+              context.translate('book_appointment'),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
@@ -75,7 +73,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.add, color: Colors.white),
             label: Text(
-              localizations.translate('book_appointment'),
+              context.translate('book_appointment'),
               style: const TextStyle(color: Colors.white),
             ),
           ),
@@ -85,7 +83,6 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   Widget _buildBookingCard(BuildContext context, Booking booking) {
-    final localizations = AppLocalizations.of(context);
     final queueProvider = Provider.of<QueueProvider>(context, listen: false);
     final isUpcoming = booking.dateTime.isAfter(DateTime.now());
 
@@ -148,9 +145,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   ),
                   child: Text(
                     isUpcoming
-                        ? localizations.translate('queue_number') +
+                        ? context.translate('queue_number') +
                             ' ${booking.queueNumber}'
-                        : localizations.translate('completed'),
+                        : context.translate('completed'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -170,7 +167,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               children: [
                 // Services
                 Text(
-                  localizations.translate('services'),
+                  context.translate('services'),
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
@@ -197,8 +194,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                               ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: Text(
-                                    localizations.translate(service.nameKey)),
+                                child: Text(context.translate(service.nameKey)),
                               ),
                               Text('\$${service.price.toStringAsFixed(2)}'),
                             ],
@@ -221,13 +217,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${booking.estimatedDurationMinutes} ${localizations.translate('minutes')}',
+                          '${booking.estimatedDurationMinutes} ${context.translate('minutes')}',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
                     ),
                     Text(
-                      localizations.translate('total_price') +
+                      context.translate('total_price') +
                           ': \$${booking.totalPrice.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -247,7 +243,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                         color: Theme.of(context).colorScheme.error,
                       ),
                       label: Text(
-                        localizations.translate('cancel_booking'),
+                        context.translate('cancel_booking'),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),
@@ -301,18 +297,17 @@ class _BookingsScreenState extends State<BookingsScreen> {
   }
 
   Future<void> _showCancelDialog(BuildContext context, String bookingId) async {
-    final localizations = AppLocalizations.of(context);
     final queueProvider = Provider.of<QueueProvider>(context, listen: false);
 
     final shouldCancel = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(localizations.translate('cancel_booking')),
-        content: Text(localizations.translate('cancel') + '?'),
+        title: Text(context.translate('cancel_booking')),
+        content: Text(context.translate('cancel') + '?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(localizations.translate('cancel')),
+            child: Text(context.translate('cancel')),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -320,7 +315,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(
-              localizations.translate('confirm'),
+              context.translate('confirm'),
               style: const TextStyle(color: Colors.white),
             ),
           ),
@@ -335,7 +330,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(localizations.translate('booking_cancelled')),
+          content: Text(context.translate('booking_cancelled')),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

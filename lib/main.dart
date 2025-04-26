@@ -1,22 +1,33 @@
 import 'package:flutter/material.dart';
-// import 'iframe_util.dart';
 import 'package:flutter/services.dart';
+import 'package:new_3c/app/extensions/localizations.dart';
 import 'package:new_3c/providers/queue_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'screens/home_screen.dart';
-import 'utils/app_localizations.dart';
 import 'utils/theme.dart';
 
-void main() {
+void main() async {
   // dfInitMessageListener();
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(ChangeNotifierProvider(
-      create: (context) => QueueProvider(), child: const MyApp()));
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ar'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: ChangeNotifierProvider(
+          create: (context) => QueueProvider(), child: const MyApp()),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -25,26 +36,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Barber',
+      title: context.translate('app_name'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      locale: Locale("ar"),
-      supportedLocales: const [
-        Locale('ar'),
-      ],
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-      ],
-      // localeResolutionCallback: (locale, supportedLocales) {
-      //   for (var supportedLocale in supportedLocales) {
-      //     if (supportedLocale.languageCode == locale?.languageCode) {
-      //       return supportedLocale;
-      //     }
-      //   }
-      //   return supportedLocales.first;
-      // },
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       home: const HomeScreen(),
     );
   }

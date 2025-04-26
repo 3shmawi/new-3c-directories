@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/app/extensions/localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/queue_provider.dart';
-import '../../utils/app_localizations.dart';
 
 class QueueStatusCard extends StatelessWidget {
   const QueueStatusCard({Key? key}) : super(key: key);
@@ -11,7 +11,6 @@ class QueueStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final queueProvider = Provider.of<QueueProvider>(context);
     // final languageProvider = Provider.of<LanguageProvider>(context);
-    final localizations = AppLocalizations.of(context);
     final queueStatus = queueProvider.queueStatus;
     final isInQueue = queueProvider.isInQueue;
 
@@ -27,7 +26,7 @@ class QueueStatusCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  localizations.translate('queue_status'),
+                  context.translate('queue_status'),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 if (isInQueue)
@@ -41,7 +40,7 @@ class QueueStatusCard extends StatelessWidget {
                     },
                     icon: Icon(Icons.exit_to_app, color: Colors.white),
                     label: Text(
-                      localizations.translate('leave_queue'),
+                      context.translate('leave_queue'),
                       style: TextStyle(color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -60,7 +59,7 @@ class QueueStatusCard extends StatelessWidget {
                 _buildInfoColumn(
                   context,
                   Icons.confirmation_number,
-                  localizations.translate('current_number'),
+                  context.translate('current_number'),
                   queueStatus?.currentNumber.toString() ?? '-',
                   Theme.of(context).colorScheme.primary,
                 ),
@@ -68,7 +67,7 @@ class QueueStatusCard extends StatelessWidget {
                   _buildInfoColumn(
                     context,
                     Icons.person,
-                    localizations.translate('your_number'),
+                    context.translate('your_number'),
                     queueStatus?.yourNumber?.toString() ?? '-',
                     Theme.of(context).colorScheme.tertiary,
                   ),
@@ -82,14 +81,14 @@ class QueueStatusCard extends StatelessWidget {
                   _buildInfoColumn(
                     context,
                     Icons.people,
-                    localizations.translate('people_ahead'),
+                    context.translate('people_ahead'),
                     queueStatus?.peopleAhead.toString() ?? '0',
                     Theme.of(context).colorScheme.secondary,
                   ),
                   _buildInfoColumn(
                     context,
                     Icons.timer,
-                    localizations.translate('estimated_wait'),
+                    context.translate('estimated_wait'),
                     _formatWaitTime(
                         context, queueStatus?.estimatedWaitMinutes ?? 0),
                     Colors.orange,
@@ -120,8 +119,8 @@ class QueueStatusCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           (queueStatus?.peopleAhead ?? 0) == 0
-                              ? localizations.translate('your_turn_now')
-                              : localizations.translate('your_turn_soon'),
+                              ? context.translate('your_turn_now')
+                              : context.translate('your_turn_soon'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -153,7 +152,7 @@ class QueueStatusCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '✨ ${localizations.translate('join_queue')}',
+                      '✨ ${context.translate('join_queue')}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.primary,
@@ -161,7 +160,7 @@ class QueueStatusCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      localizations.translate('select_services_prompt'),
+                      context.translate('select_services_prompt'),
                       style: TextStyle(
                         color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
@@ -203,27 +202,25 @@ class QueueStatusCard extends StatelessWidget {
   }
 
   String _formatWaitTime(BuildContext context, int minutes) {
-    final localizations = AppLocalizations.of(context);
     if (minutes < 60) {
-      return '$minutes ${localizations.translate('mins')}';
+      return '$minutes ${context.translate('mins')}';
     } else {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
-      return '$hours ${localizations.translate('hours')} $remainingMinutes ${localizations.translate('mins')}';
+      return '$hours ${context.translate('hours')} $remainingMinutes ${context.translate('mins')}';
     }
   }
 
   Future<bool> _showLeaveQueueConfirmation(BuildContext context) async {
-    final localizations = AppLocalizations.of(context);
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(localizations.translate('warning')),
-            content: Text(localizations.translate('leave_queue') + '?'),
+            title: Text(context.translate('warning')),
+            content: Text(context.translate('leave_queue') + '?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text(localizations.translate('cancel')),
+                child: Text(context.translate('cancel')),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -231,7 +228,7 @@ class QueueStatusCard extends StatelessWidget {
                   backgroundColor: Theme.of(context).colorScheme.error,
                 ),
                 child: Text(
-                  localizations.translate('confirm'),
+                  context.translate('confirm'),
                   style: TextStyle(color: Colors.white),
                 ),
               ),

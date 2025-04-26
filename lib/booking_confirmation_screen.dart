@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/app/extensions/localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/queue_provider.dart';
-import '../utils/app_localizations.dart';
 import 'screens/home_screen.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
@@ -60,8 +60,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
   Widget build(BuildContext context) {
     final queueProvider = Provider.of<QueueProvider>(context);
     // final languageProvider = Provider.of<LanguageProvider>(context);
-    final localizations = AppLocalizations.of(context);
-    final isArabic = true;
 
     final queueStatus = queueProvider.queueStatus;
     final booking = queueProvider.currentBooking;
@@ -69,244 +67,242 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         ? (booking?.services ?? [])
         : queueProvider.selectedServices;
 
-    return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        body: SafeArea(
-          child: Stack(
-            children: [
-              // Background image
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.1,
-                  child: Image.network(
-                    "https://pixabay.com/get/gd86b7121cfcebbedbedf85e79f59ac3d3961b672527d7be46baf2a01b006820211f12aa36fa445695936cfbaabeac0fed52881610890fdc20cde53ae720a36ed_1280.png",
-                    fit: BoxFit.cover,
-                  ),
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Background image
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.1,
+                child: Image.network(
+                  "https://images.pexels.com/photos/3992874/pexels-photo-3992874.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.1),
+                    );
+                  },
                 ),
               ),
+            ),
 
-              // Content
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Success icon
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 64,
-                            ),
+            // Content
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Success icon
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
                           ),
-                          const SizedBox(height: 24),
-
-                          // Heading
-                          Text(
-                            widget.isJoinQueue
-                                ? localizations.translate('queue_joined')
-                                : localizations.translate('booking_confirmed'),
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                            textAlign: TextAlign.center,
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 64,
                           ),
-                          const SizedBox(height: 8),
+                        ),
+                        const SizedBox(height: 24),
 
-                          // Subheading
+                        // Heading
+                        Text(
                           widget.isJoinQueue
-                              ? Text(
-                                  '${localizations.translate('queue_number')} ${queueStatus?.yourNumber}',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                  textAlign: TextAlign.center,
-                                )
-                              : Text(
-                                  localizations.translate('booking_successful'),
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                  textAlign: TextAlign.center,
+                              ? context.translate('queue_joined')
+                              : context.translate('booking_confirmed'),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Subheading
+                        widget.isJoinQueue
+                            ? Text(
+                                '${context.translate('queue_number')} ${queueStatus?.yourNumber}',
+                                style: Theme.of(context).textTheme.titleMedium,
+                                textAlign: TextAlign.center,
+                              )
+                            : Text(
+                                context.translate('booking_successful'),
+                                style: Theme.of(context).textTheme.titleMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                        const SizedBox(height: 32),
+
+                        // Booking details card
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.translate('booking_details'),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
-                          const SizedBox(height: 32),
+                                const Divider(),
+                                const SizedBox(height: 8),
 
-                          // Booking details card
-                          Card(
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    localizations.translate('booking_details'),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                // Queue details or appointment details
+                                if (widget.isJoinQueue) ...[
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.people,
+                                    context.translate('people_ahead'),
+                                    '${queueStatus?.peopleAhead}',
                                   ),
-                                  const Divider(),
-                                  const SizedBox(height: 8),
-
-                                  // Queue details or appointment details
-                                  if (widget.isJoinQueue) ...[
-                                    _buildDetailRow(
-                                      context,
-                                      Icons.people,
-                                      localizations.translate('people_ahead'),
-                                      '${queueStatus?.peopleAhead}',
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _buildDetailRow(
-                                      context,
-                                      Icons.timer,
-                                      localizations
-                                          .translate('estimated_wait_time'),
-                                      '${queueStatus?.estimatedWaitMinutes} ${localizations.translate('mins')}',
-                                    ),
-                                  ] else ...[
-                                    _buildDetailRow(
-                                      context,
-                                      Icons.calendar_today,
-                                      localizations.translate('date'),
-                                      _formatDate(widget.bookingDateTime!),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _buildDetailRow(
-                                      context,
-                                      Icons.access_time,
-                                      localizations.translate('time'),
-                                      _formatTime(widget.bookingDateTime!),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _buildDetailRow(
-                                      context,
-                                      Icons.timer,
-                                      localizations
-                                          .translate('estimated_duration'),
-                                      '${_calculateTotalDuration(selectedServices)} ${localizations.translate('mins')}',
-                                    ),
-                                  ],
-
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    localizations.translate('booking_services'),
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                  const SizedBox(height: 12),
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.timer,
+                                    context.translate('estimated_wait_time'),
+                                    '${queueStatus?.estimatedWaitMinutes} ${context.translate('mins')}',
                                   ),
-                                  const SizedBox(height: 8),
-
-                                  // Services list
-                                  ...selectedServices
-                                      .map((service) => Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 8.0),
-                                            child: Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.check_circle,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                  size: 16,
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Text(
-                                                      localizations.translate(
-                                                          service.nameKey)),
-                                                ),
-                                                Text(
-                                                    '\$${service.price.toStringAsFixed(2)}'),
-                                              ],
-                                            ),
-                                          ))
-                                      .toList(),
-
-                                  const Divider(),
-                                  const SizedBox(height: 8),
-
-                                  // Total price
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        localizations.translate('total_price'),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      Text(
-                                        '\$${_calculateTotalPrice(selectedServices).toStringAsFixed(2)}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                            ),
-                                      ),
-                                    ],
+                                ] else ...[
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.calendar_today,
+                                    context.translate('date'),
+                                    _formatDate(widget.bookingDateTime!),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.access_time,
+                                    context.translate('time'),
+                                    _formatTime(widget.bookingDateTime!),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.timer,
+                                    context.translate('estimated_duration'),
+                                    '${_calculateTotalDuration(selectedServices)} ${context.translate('mins')}',
                                   ),
                                 ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 32),
 
-                          // Back to home button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const HomeScreen()),
-                                  (route) => false,
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                              ),
-                              child: Text(
-                                localizations.translate('continue'),
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                              ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  context.translate('booking_services'),
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Services list
+                                ...selectedServices
+                                    .map((service) => Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.check_circle,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                                size: 16,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(context.translate(
+                                                    service.nameKey)),
+                                              ),
+                                              Text(
+                                                  '\$${service.price.toStringAsFixed(2)}'),
+                                            ],
+                                          ),
+                                        ))
+                                    .toList(),
+
+                                const Divider(),
+                                const SizedBox(height: 8),
+
+                                // Total price
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      context.translate('total_price'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
+                                    ),
+                                    Text(
+                                      '\$${_calculateTotalPrice(selectedServices).toStringAsFixed(2)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Back to home button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const HomeScreen()),
+                                (route) => false,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: Text(
+                              context.translate('continue'),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 16),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
