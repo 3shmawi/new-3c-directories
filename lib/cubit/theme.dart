@@ -4,9 +4,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 class ThemeCubit extends Cubit<bool> {
   ThemeCubit(super.isDark) : super();
 
-  void toggleTheme() {
-    final box = Hive.box('theme');
+  Box<bool> get box => Hive.box<bool>('theme');
 
+  void toggleTheme() {
     final isDark = box.get('isDark', defaultValue: false) as bool;
     box.put('isDark', !isDark);
     emit(!isDark);
