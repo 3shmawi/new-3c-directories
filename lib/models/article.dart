@@ -19,13 +19,13 @@ class Article {
 
   factory Article.fromJson(Map<String, dynamic> json) {
     return Article(
-      id: json['id'] as int,
+      id: int.parse(json['id'].toString()),
       title: json['title'] as String,
       description: json['description'] as String,
       picture: json['picture'] as String,
       publishedAt: json['publishedAt'] as String,
       authorName: json['authorName'] as String,
-      authorId: json['authorId'] as String,
+      authorId: json['authorId'].toString(),
     );
   }
 

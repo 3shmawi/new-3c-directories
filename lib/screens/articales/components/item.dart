@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:new_3c/app/config.dart';
 
 import '../../../models/article.dart';
 
@@ -99,7 +100,7 @@ class EmptyData extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Lottie.asset("assets/json/empty.json", height: 300),
+        Lottie.asset(AppConfig.empty, height: 300),
         const SizedBox(height: 20),
         Text(
           "No article found!",
