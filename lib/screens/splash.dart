@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:new_3c/app/config.dart';
 import 'package:new_3c/app/extension.dart';
-import 'package:new_3c/screens/layout/view.dart';
+
+import 'auth/auth_view.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   _initCounter() {
     _timer = Timer.periodic(
       Duration(seconds: counter),
-      (_) => context.pushReplacement(LayoutView()),
+      (_) => context.pushReplacement(AuthView()),
     );
   }
 
