@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:new_3c/screens/settings/settings_data/settings_data_view.dart';
 import 'package:new_3c/screens/settings/user_data/user_data_view.dart';
@@ -19,15 +18,5 @@ class SettingsView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<bool> logout() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      return true;
-    } catch (error) {
-      print(error);
-      return false;
-    }
   }
 }

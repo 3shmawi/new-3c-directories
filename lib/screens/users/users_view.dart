@@ -46,20 +46,20 @@ class UsersView extends StatelessWidget {
                               ConnectionState.waiting) {
                             return CircleAvatar(
                               radius: 5,
-                              backgroundColor: Colors.grey,
+                              backgroundColor: Colors.grey[300],
                             );
                           }
                           final isOnline = snapshot.data;
                           if (isOnline == null) {
                             return CircleAvatar(
                               radius: 5,
-                              backgroundColor: Colors.grey,
+                              backgroundColor: Colors.grey[300],
                             );
                           }
                           return CircleAvatar(
                             radius: 5,
                             backgroundColor:
-                                isOnline ? Colors.green : Colors.grey,
+                                isOnline ? Colors.green[500] : Colors.grey[300],
                           );
                         }),
                   ),

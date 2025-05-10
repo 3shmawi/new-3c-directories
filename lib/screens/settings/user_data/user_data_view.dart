@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/user_ctrl/user_cubit.dart';
+import 'package:new_3c/screens/settings/user_data/edit_user_data_view.dart';
 import 'package:new_3c/screens/settings/user_data/widgets/data_item.dart';
 
 class UserDataView extends StatelessWidget {
@@ -13,13 +15,15 @@ class UserDataView extends StatelessWidget {
       buildWhen: (_, current) =>
           current is GetMyUserDataLoadingState ||
           current is GetMyUserDataSuccessState ||
-          current is GetMyUserDataErrorState,
+          current is GetMyUserDataErrorState ||
+          current is EditMyUserDataSuccessState,
       builder: (context, state) {
         final cubit = userCubit(context);
         if (state is GetMyUserDataLoadingState) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is GetMyUserDataSuccessState) {
+        if (state is GetMyUserDataSuccessState ||
+            state is EditMyUserDataSuccessState) {
           final user = cubit.myUserData!;
           return Column(
             children: [
@@ -38,16 +42,19 @@ class UserDataView extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               UserDataItem(
+                onTap: () => context.push(EditUserDataView(user)),
                 title: user.name,
                 icon: CupertinoIcons.profile_circled,
               ),
               const SizedBox(height: 10),
               UserDataItem(
+                onTap: () => context.push(EditUserDataView(user)),
                 title: user.email,
                 icon: CupertinoIcons.mail,
               ),
               const SizedBox(height: 10),
               UserDataItem(
+                onTap: () => context.push(EditUserDataView(user)),
                 title: user.phone,
                 icon: CupertinoIcons.phone,
               ),

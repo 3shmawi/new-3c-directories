@@ -48,4 +48,23 @@ class UserModel {
       fcmToken: json['fcm_token'],
     );
   }
+
+  UserModel copyWith({
+    String? name,
+    String? phone,
+    String? bio,
+    String? imgUrl,
+    bool? isMale,
+  }) {
+    return UserModel(
+      id: id,
+      name: name ?? this.name,
+      email: email,
+      phone: phone ?? this.phone,
+      bio: bio ?? this.bio,
+      imgUrl: imgUrl ?? this.imgUrl,
+      isOnline: isOnline,
+      isMale: isMale ?? this.isMale,
+    );
+  }
 }

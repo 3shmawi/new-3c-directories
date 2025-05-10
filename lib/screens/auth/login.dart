@@ -18,6 +18,7 @@ class LoginScreen extends StatelessWidget {
           if (state is LoginSuccessState) {
             context.showSuccess("You have logged in successfully");
             userCubit(context).getMyUserData();
+            userCubit(context).updateUserStatus(true);
             context.pushAndRemoveUntil(const LayoutScreen());
           } else if (state is LoginErrorState) {
             context.showError(state.error);
