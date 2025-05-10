@@ -12,7 +12,7 @@ class ArticlesCtrl extends Cubit<ArticlesStates> {
     emit(ArticlesLoadingState());
     _http.get("posts").then((value) {
       final articles = (value as List).map((e) => Article.fromJson(e)).toList();
-      emit(ArticlesSuccessState(articles));
+      emit(ArticlesSuccessState(articles.reversed.toList()));
     }).catchError((error) {
       emit(ArticlesErrorState(error.toString()));
     });

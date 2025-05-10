@@ -12,7 +12,7 @@ class NewArticleCtrl extends Cubit<NewArticleStates> {
 
   final _http = HttpUtil();
 
-  void createNewArticle() {
+  void createNewArticle(String authorId) {
     if (isFormsEmpty()) {
       emit(NewArticleErrorState("The fields are empty"));
       return;
@@ -25,7 +25,7 @@ class NewArticleCtrl extends Cubit<NewArticleStates> {
       picture: imgUrlCtrl.text,
       publishedAt: DateTime.now().toIso8601String(),
       authorName: authorNameCtrl.text,
-      authorId: "2",
+      authorId: authorId,
     );
 
     _http.post("posts", data: newArticle.toJson()).then((value) {

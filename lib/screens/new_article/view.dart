@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/colors.dart';
 import 'package:new_3c/app/toast.dart';
+import 'package:new_3c/controller/auth_ctrl.dart';
+import 'package:new_3c/controller/layout_ctrl.dart';
 import 'package:new_3c/controller/new_article_ctrl.dart';
 
 class NewArticleView extends StatefulWidget {
@@ -21,6 +23,7 @@ class _NewArticleViewState extends State<NewArticleView> {
           switch (state) {
             case NewArticleSuccessState():
               AppToast.showSuccess(state.message);
+              context.read<LayoutCtrl>().changeIndex(0);
             case NewArticleErrorState():
               AppToast.showError(state.error);
           }
@@ -74,7 +77,15 @@ class _NewArticleViewState extends State<NewArticleView> {
                   ElevatedButton(
                     onPressed: state is NewArticleLoadingState
                         ? null
-                        : ctrl.createNewArticle,
+                        : () {
+                            final authorId =
+                                context.read<AuthCtrl>().authorModel?.id;
+                            if (authorId == null) {
+                              AppToast.showError("You must login first!");
+                              return;
+                            }
+                            ctrl.createNewArticle(authorId);
+                          },
                     child: Text("Submit"),
                   ),
                   if (state is NewArticleLoadingState)

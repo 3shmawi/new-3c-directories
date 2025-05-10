@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:new_3c/app/config.dart';
+import 'package:new_3c/app/functions.dart';
 
 import '../../../models/article.dart';
 
@@ -76,7 +77,7 @@ class NewsItem extends StatelessWidget {
                         Text(
                           isLoading
                               ? "*******************"
-                              : article?.publishedAt ?? "",
+                              : daysBetween(article?.publishedAt ?? ""),
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         )
                       ],
@@ -97,21 +98,22 @@ class EmptyData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Lottie.asset(AppConfig.empty, height: 300),
-        const SizedBox(height: 20),
-        Text(
-          "No article found!",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.cyan,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset(AppConfig.empty, height: 300),
+          const SizedBox(height: 20),
+          Text(
+            "No article found!",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.cyan,
+            ),
           ),
-        ),
-        const SizedBox(height: 120),
-      ],
+        ],
+      ),
     );
   }
 }
