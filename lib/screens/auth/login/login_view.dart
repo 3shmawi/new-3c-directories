@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/app/config.dart';
+import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl.dart';
+import 'package:new_3c/screens/layout/view.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -12,19 +13,14 @@ class LoginView extends StatelessWidget {
     final ctrl = AuthCtrl.get(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Login at ${AppConfig.appName}",
+          "Welcome back",
           style: TextStyle(
             color: theme.primaryColor,
             fontSize: 40,
             fontWeight: FontWeight.w700,
           ),
-        ),
-        Text(
-          "Welcome back",
-          style: TextStyle(color: Colors.grey[600]),
         ),
         const SizedBox(height: 30),
         TextFormField(
@@ -53,7 +49,9 @@ class LoginView extends StatelessWidget {
         ),
         const SizedBox(height: 40),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            context.pushAndFinish(LayoutView());
+          },
           child: Text("Login"),
         ),
         const SizedBox(height: 10),

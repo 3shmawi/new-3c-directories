@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/app/config.dart';
+import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl.dart';
+import 'package:new_3c/screens/layout/view.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -12,19 +13,20 @@ class RegisterView extends StatelessWidget {
     final ctrl = AuthCtrl.get(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Register at ${AppConfig.appName}",
+          "Create new account",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: theme.primaryColor,
-            fontSize: 40,
+            fontSize: 30,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 30),
         TextFormField(
-          controller: ctrl.userIdCtrl,
+          controller: ctrl.nameCtrl,
           decoration: InputDecoration(
             prefixIcon: Icon(CupertinoIcons.profile_circled),
             hintText: "Name",
@@ -32,7 +34,7 @@ class RegisterView extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         TextFormField(
-          controller: ctrl.userIdCtrl,
+          controller: ctrl.emailCtrl,
           decoration: InputDecoration(
             prefixIcon: Icon(CupertinoIcons.mail),
             hintText: "Email",
@@ -40,7 +42,7 @@ class RegisterView extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         TextFormField(
-          controller: ctrl.userIdCtrl,
+          controller: ctrl.phoneCtrl,
           decoration: InputDecoration(
             prefixIcon: Icon(CupertinoIcons.phone),
             hintText: "Phone",
@@ -65,7 +67,9 @@ class RegisterView extends StatelessWidget {
         ),
         const SizedBox(height: 40),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            context.pushAndFinish(LayoutView());
+          },
           child: Text("Register"),
         ),
         const SizedBox(height: 10),

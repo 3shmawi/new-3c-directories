@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 abstract class AppTheme {
   static final light = ThemeData(
     primaryColor: Colors.blue[900],
+    colorScheme: ColorScheme.light(),
     bottomNavigationBarTheme: _customBottomNavBarTheme,
     inputDecorationTheme: _customInputDecorationTheme,
     elevatedButtonTheme: _customElevatedButtonTheme,
@@ -10,21 +11,24 @@ abstract class AppTheme {
 
   static final dark = ThemeData(
     primaryColor: Colors.blue[900],
+    colorScheme: ColorScheme.dark(),
+    scaffoldBackgroundColor: Colors.white10,
     bottomNavigationBarTheme: _customBottomNavBarTheme,
     inputDecorationTheme: _customInputDecorationTheme,
     elevatedButtonTheme: _customElevatedButtonTheme,
+    textTheme: TextTheme(
+        headlineSmall: TextStyle(color: Colors.white54),
+        bodyMedium: TextStyle(color: Colors.white60)),
   );
 
   ///customs themes
   static final _customBottomNavBarTheme = BottomNavigationBarThemeData(
-    backgroundColor: Colors.white,
     unselectedItemColor: Colors.grey[500],
     type: BottomNavigationBarType.fixed,
   );
 
   static final _customInputDecorationTheme = InputDecorationTheme(
     filled: true,
-    fillColor: Colors.white,
     hintStyle: TextStyle(
       color: Colors.grey[500],
       fontSize: 14,
