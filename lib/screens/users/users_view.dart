@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/user_ctrl/user_cubit.dart';
+import 'package:new_3c/screens/messages/messages_view.dart';
 
 class UsersView extends StatelessWidget {
   const UsersView({super.key});
@@ -33,12 +35,12 @@ class UsersView extends StatelessWidget {
                 final user = users[index];
                 return Card(
                   child: ListTile(
+                    onTap: () => context.push(MessagesView("chatId")),
                     title: Text(user.name),
                     subtitle: Text(user.email),
                     leading: CircleAvatar(
                       backgroundImage: NetworkImage(user.imgUrl),
                     ),
-                    //todo is online steam
                     trailing: StreamBuilder<bool>(
                         stream: cubit.isOnline(user.id),
                         builder: (context, snapshot) {
