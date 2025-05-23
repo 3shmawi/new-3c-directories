@@ -10,9 +10,9 @@ class LayoutCtrl extends Cubit<LayoutStates> {
   static LayoutCtrl get(context) => BlocProvider.of(context);
 
   final List<Widget> screens = [
-    NewsletterView(),
-    NewArticleView(),
-    ProfileView(),
+    NewsletterView(), //0
+    NewArticleView(), //1
+    ProfileView(), //2
   ];
 
   int currentIndex = 0;

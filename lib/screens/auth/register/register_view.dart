@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl.dart';
-import 'package:new_3c/screens/layout/view.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -67,9 +65,7 @@ class RegisterView extends StatelessWidget {
         ),
         const SizedBox(height: 40),
         ElevatedButton(
-          onPressed: () {
-            context.pushAndFinish(LayoutView());
-          },
+          onPressed: ctrl.register,
           child: Text("Register"),
         ),
         const SizedBox(height: 10),

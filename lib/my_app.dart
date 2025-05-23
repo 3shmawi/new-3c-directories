@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/theme.dart';
+import 'package:new_3c/controller/auth_ctrl.dart';
 import 'package:new_3c/screens/profile/view.dart';
 
 import 'screens/splash.dart';
@@ -9,16 +11,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-        valueListenable: isDark,
-        builder: (_, value, __) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: value ? ThemeMode.dark : ThemeMode.light,
-            home: SplashScreen(),
-          );
-        });
+    return BlocProvider(
+      create: (context) => AuthCtrl()..getMyData(),
+      child: ValueListenableBuilder(
+          valueListenable: isDark,
+          builder: (_, value, __) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: value ? ThemeMode.dark : ThemeMode.light,
+              home: SplashScreen(),
+            );
+          }),
+    );
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/config.dart';
+import 'package:new_3c/app/extension.dart';
+import 'package:new_3c/app/toast.dart';
 import 'package:new_3c/controller/auth_ctrl.dart';
 import 'package:new_3c/screens/auth/login/login_view.dart';
 import 'package:new_3c/screens/auth/register/register_view.dart';
+import 'package:new_3c/screens/layout/view.dart';
 
 class AuthView extends StatelessWidget {
   const AuthView({super.key});
@@ -12,7 +15,15 @@ class AuthView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AuthCtrl(),
-      child: BlocBuilder<AuthCtrl, AuthStates>(
+      child: BlocConsumer<AuthCtrl, AuthStates>(
+        listener: (context, state) {
+          if (state is AuthErrorState) {
+            AppToast.showError(state.error);
+          } else if (state is AuthSuccessState) {
+            AppToast.showSuccess("You have logged in successfully");
+            context.pushReplacement(LayoutView());
+          }
+        },
         builder: (context, state) {
           final ctrl = AuthCtrl.get(context);
           return Scaffold(
@@ -38,6 +49,10 @@ class AuthView extends StatelessWidget {
                             milliseconds: 500,
                           ),
                         ),
+                        if (state is AuthLoadingState)
+                          const Center(
+                            child: LinearProgressIndicator(),
+                          ),
                       ],
                     ),
                   ),

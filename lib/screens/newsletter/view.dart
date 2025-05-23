@@ -12,17 +12,18 @@ class NewsletterView extends StatelessWidget {
       child: ListView.separated(
         padding: EdgeInsets.all(10),
         itemBuilder: (context, index) => ArticleItemWidget(
-            article: ArticleModel(
-          title:
-              "title sadfjlk alsdfkj;alskdf als;dkjf;lasdkjf ;alsdfj k;asldkfj a;s",
-          authorName: "authorName",
-          description:
-              "description l;aksjdf;l kalsdkfj la;skdfja sl;dfka sdlfkjasdlfkasdlkf asd;lfkjalsdkf ja;sldkf jasfalskdfj ;askdfja sdlfkajs;dfl kjasldfkjas fd",
-          picture: "",
-          authorId: "authorId",
-          publishedAt: "publishedAt",
-          id: "id",
-        )),
+          article: ArticleModel(
+            title:
+                "title sadfjlk alsdfkj;alskdf als;dkjf;lasdkjf ;alsdfj k;asldkfj a;s",
+            authorName: "authorName",
+            description:
+                "description l;aksjdf;l kalsdkfj la;skdfja sl;dfka sdlfkjasdlfkasdlkf asd;lfkjalsdkf ja;sldkf jasfalskdfj ;askdfja sdlfkajs;dfl kjasldfkjas fd",
+            picture: "",
+            authorId: "authorId",
+            publishedAt: "publishedAt",
+            id: "id",
+          ),
+        ),
         separatorBuilder: (context, index) => SizedBox(
           height: 10,
         ),

@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl.dart';
-import 'package:new_3c/screens/layout/view.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -49,9 +47,7 @@ class LoginView extends StatelessWidget {
         ),
         const SizedBox(height: 40),
         ElevatedButton(
-          onPressed: () {
-            context.pushAndFinish(LayoutView());
-          },
+          onPressed: ctrl.login,
           child: Text("Login"),
         ),
         const SizedBox(height: 10),

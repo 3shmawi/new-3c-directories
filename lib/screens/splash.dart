@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:new_3c/app/config.dart';
 import 'package:new_3c/app/extension.dart';
+import 'package:new_3c/services/local_storage_helper.dart';
 
 import 'auth/auth_view.dart';
+import 'layout/view.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,11 +18,13 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   int counter = 2;
   late Timer _timer;
+  final myId = CacheHelper.getData(key: "myId");
 
   _initCounter() {
+    final page = myId == null ? AuthView() : LayoutView();
     _timer = Timer.periodic(
       Duration(seconds: counter),
-      (_) => context.pushReplacement(AuthView()),
+      (_) => context.pushReplacement(page),
     );
   }
 
