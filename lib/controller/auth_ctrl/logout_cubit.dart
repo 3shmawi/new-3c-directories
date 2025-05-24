@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/screens/auth/login.dart';
+import 'package:new_3c/services/local_storage.dart';
 
 import '../user_ctrl/user_cubit.dart';
 
@@ -13,6 +14,7 @@ class LogoutCubit {
       userCubit(context).updateUserStatus(false);
 
       await _auth.signOut();
+      CacheHelper.removeData(key: "myId");
       context.showSuccess('Logout successful');
       context.pushAndRemoveUntil(LoginScreen());
     } catch (error) {

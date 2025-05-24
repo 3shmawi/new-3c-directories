@@ -17,6 +17,13 @@ class UserCubit extends Cubit<UserStates> {
     return _auth.currentUser != null;
   }
 
+  String get senderId {
+    if (!isUserLoggedIn()) {
+      throw Exception("User not logged in");
+    }
+    return _auth.currentUser!.uid;
+  }
+
 //getMyUserData
   void getMyUserData() async {
     emit(GetMyUserDataLoadingState());

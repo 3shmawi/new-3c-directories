@@ -9,17 +9,17 @@ import '../../app/constants.dart';
 class ChatCubit extends Cubit<ChatStates> {
   ChatCubit() : super(ChatInitialState());
 
-  final String? _currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
   Stream<List<ChatModel>> getMyChats() {
-    if (_currentUserId != null) {
+    if (currentUserId != null) {
       return AppConstants.collectionPath
           .collection('chats')
           .where(
             'participants',
-            arrayContains: _currentUserId,
+            arrayContains: currentUserId,
           )
-          .orderBy("last_message_time", descending: false)
+          .orderBy("last_message_time", descending: true)
           .snapshots()
           .map((snapshot) => snapshot.docs
               .map((doc) => ChatModel.fromJson(doc.data()))
@@ -45,36 +45,39 @@ class ChatCubit extends Cubit<ChatStates> {
 
   Future<String> fetchOrCreateChat(String senderId, String receiverId) async {
     final col = AppConstants.collectionPath.collection('chats');
-
+    final participants = [senderId, receiverId];
+    participants.sort();
     // ❶ Try to find an existing 1-to-1 chat
-    final snap = await col
-        .where('participants', arrayContains: senderId)
-        .where('participants', arrayContains: receiverId)
-        .limit(1)
-        .get();
+    final snap =
+        await col.where('participants', isEqualTo: participants).limit(1).get();
 
     if (snap.docs.isNotEmpty) return snap.docs.first.id;
 
     // ❷ None found → create a new chat doc
+
     final doc = await col.add({
-      'participants': [senderId, receiverId],
+      'sender_id': senderId,
+      'receiver_id': receiverId,
+      "last_sender_id": senderId,
+      'participants': participants,
     });
     return doc.id;
   }
 
   void sendMessage(String chatId) {
-    if (_currentUserId == null) {
+    if (currentUserId == null) {
       emit(SendMessageErrorState("You should login first"));
       return;
     }
 
     if (messageCtrl.text.isEmpty) {
       emit(SendMessageErrorState("Please write an message first"));
+      return;
     }
     final newId = DateTime.now().toIso8601String();
     final newMessage = MessageModel(
       id: newId,
-      senderId: _currentUserId,
+      senderId: currentUserId!,
       receiverId: chatId,
       text: messageCtrl.text,
       time: newId,
@@ -90,7 +93,9 @@ class ChatCubit extends Cubit<ChatStates> {
       await AppConstants.collectionPath.collection("chats").doc(chatId).update({
         'last_message': newMessage.text,
         'last_message_time': newMessage.time,
+        'last_sender_id': newMessage.senderId,
       });
+      messageCtrl.clear();
       emit(SendMessageSuccessState());
     }).catchError((error) {
       emit(SendMessageErrorState(

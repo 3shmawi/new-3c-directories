@@ -5,7 +5,7 @@ class ChatModel {
   final String senderId;
   final String receiverId;
   final String lastMessage;
-  final Timestamp lastMessageTime;
+  final String lastMessageTime;
   final String lastSenderId;
   final String lastMessageType;
   final bool isSenderSeeChat;
@@ -42,13 +42,13 @@ class ChatModel {
 
   factory ChatModel.fromJson(Map<String, dynamic> json) {
     return ChatModel(
-      id: json['id'],
-      senderId: json['sender_id'],
-      receiverId: json['receiver_id'],
-      lastMessage: json['last_message'],
+      id: json['id'] ?? "",
+      senderId: json['sender_id'] ?? "",
+      receiverId: json['receiver_id'] ?? "",
+      lastMessage: json['last_message'] ?? "",
       lastMessageTime: json['last_message_time'] ?? Timestamp.now(),
-      lastSenderId: json['last_sender_id'],
-      lastMessageType: json['last_message_type'],
+      lastSenderId: json['last_sender_id'] ?? "",
+      lastMessageType: json['last_message_type'] ?? "",
       isSenderSeeChat: json['is_sender_see_chat'] ?? false,
       isReceiverSeeChat: json['is_receiver_see_chat'] ?? false,
       participants: List<String>.from(json['participants'] ?? []),

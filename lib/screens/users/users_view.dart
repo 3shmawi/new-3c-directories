@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:new_3c/app/extension.dart';
+import 'package:new_3c/controller/chat_ctrl/chat_cubit.dart';
 import 'package:new_3c/controller/user_ctrl/user_cubit.dart';
-import 'package:new_3c/screens/messages/messages_view.dart';
+
+import '../messages/messages_view.dart';
 
 class UsersView extends StatelessWidget {
   const UsersView({super.key});
@@ -35,7 +37,11 @@ class UsersView extends StatelessWidget {
                 final user = users[index];
                 return Card(
                   child: ListTile(
-                    onTap: () => context.push(MessagesView("chatId")),
+                    onTap: () async {
+                      final chatId = await ChatCubit()
+                          .fetchOrCreateChat(cubit.senderId, user.id);
+                      context.push(MessagesView(chatId));
+                    },
                     title: Text(user.name),
                     subtitle: Text(user.email),
                     leading: CircleAvatar(

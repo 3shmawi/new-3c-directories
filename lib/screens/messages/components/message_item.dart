@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/app/functions.dart';
 import 'package:new_3c/models/message.dart';
 
 class MessageItem extends StatelessWidget {
@@ -37,7 +38,7 @@ class MessageItem extends StatelessWidget {
                       color: isSender ? Colors.grey[900] : Colors.cyan[900])),
               TextSpan(text: "\n"),
               TextSpan(
-                text: messageModel?.time,
+                text: daysBetween(messageModel?.time),
                 style: TextStyle(
                   fontSize: 11,
                   color: isSender ? Colors.grey[300] : Colors.grey,

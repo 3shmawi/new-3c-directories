@@ -5,6 +5,8 @@ import 'package:new_3c/controller/layout_ctrl/layout_cubit.dart';
 import 'package:new_3c/controller/settings_ctrl/settings_cubit.dart';
 import 'package:new_3c/controller/user_ctrl/user_cubit.dart';
 import 'package:new_3c/screens/auth/login.dart';
+import 'package:new_3c/screens/layout.dart';
+import 'package:new_3c/services/local_storage.dart';
 
 import 'firebase_options.dart';
 
@@ -18,6 +20,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await CacheHelper.init();
   runApp(
     MultiBlocProvider(
       providers: [
@@ -41,6 +44,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final myId = CacheHelper.getData(key: "myId");
     return BlocBuilder<SettingsCubit, SettingsStates>(
       buildWhen: (_, current) => current is ChangeThemeState,
       builder: (context, state) {
@@ -49,7 +53,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData.light(useMaterial3: true),
           darkTheme: ThemeData.dark(useMaterial3: true),
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-          home: LoginScreen(),
+          home: myId == null ? LoginScreen() : LayoutScreen(),
         );
       },
     );

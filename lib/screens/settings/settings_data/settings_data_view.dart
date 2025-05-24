@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/app/extension.dart';
 import 'package:new_3c/controller/auth_ctrl/logout_cubit.dart';
+import 'package:new_3c/controller/layout_ctrl/layout_cubit.dart';
 
 import '../../../controller/settings_ctrl/settings_cubit.dart';
 
@@ -65,6 +66,7 @@ class SettingsDataView extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
+                          LayoutCubit().changeLayout(0);
                           LogoutCubit().logout(context);
                         },
                         child: const Text("Logout"),

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/services/local_storage.dart';
 
 class LoginCubit extends Cubit<LoginStates> {
   LoginCubit() : super(LoginInitialState());
@@ -33,6 +34,9 @@ class LoginCubit extends Cubit<LoginStates> {
         email: emailCtrl.text,
         password: passwordCtrl.text,
       );
+      emailCtrl.clear();
+      passwordCtrl.clear();
+      CacheHelper.saveData(key: "myId", value: _auth.currentUser?.uid);
       emit(LoginSuccessState());
     } on FirebaseAuthException catch (error) {
       emit(LoginErrorState("Failed to login\n${error.message ?? error}"));
