@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 abstract class AppTheme {
   static final light = ThemeData(
+    fontFamily: "Playfair",
     primaryColor: Colors.blue[900],
     colorScheme: ColorScheme.light(),
     bottomNavigationBarTheme: _customBottomNavBarTheme,
@@ -11,6 +12,7 @@ abstract class AppTheme {
 
   static final dark = ThemeData(
     primaryColor: Colors.blue[900],
+    fontFamily: "Playfair",
     colorScheme: ColorScheme.dark(),
     scaffoldBackgroundColor: Colors.white10,
     bottomNavigationBarTheme: _customBottomNavBarTheme,

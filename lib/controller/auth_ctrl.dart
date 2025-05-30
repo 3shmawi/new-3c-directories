@@ -99,8 +99,9 @@ class AuthCtrl extends Cubit<AuthStates> {
     user = null;
   }
 
+  final myId = CacheHelper.getData(key: "myId");
+
   void getMyData() {
-    final myId = CacheHelper.getData(key: "myId");
     if (myId == null) {
       return;
     }

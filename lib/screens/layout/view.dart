@@ -9,17 +9,14 @@ class LayoutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => LayoutCtrl(),
-      child: BlocBuilder<LayoutCtrl, LayoutStates>(
-        builder: (context, state) {
-          final ctrl = LayoutCtrl.get(context);
-          return Scaffold(
-            body: ctrl.screens[ctrl.currentIndex],
-            bottomNavigationBar: BottomNavBarItem(ctrl),
-          );
-        },
-      ),
+    return BlocBuilder<LayoutCtrl, LayoutStates>(
+      builder: (context, state) {
+        final ctrl = LayoutCtrl.get(context);
+        return Scaffold(
+          body: ctrl.screens[ctrl.currentIndex],
+          bottomNavigationBar: BottomNavBarItem(ctrl),
+        );
+      },
     );
   }
 }
