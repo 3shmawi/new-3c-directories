@@ -85,7 +85,6 @@ class _CounterViewState extends State<CounterView> {
                 label: Text("Increment"),
                 icon: Icon(Icons.add),
               ),
-              SizedBox(width: 20),
               ElevatedButton.icon(
                 onPressed: _decrementCounter,
                 label: Text("Decrement"),
