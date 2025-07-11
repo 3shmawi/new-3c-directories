@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+/// Singleton class
 class HiveService {
   static final HiveService _instance = HiveService._internal();
 
