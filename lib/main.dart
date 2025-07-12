@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:new_3c/chat_app.dart';
 
-import 'counter_app.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -9,5 +9,5 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const CounterApp());
+  runApp(const ChatApp());
 }
