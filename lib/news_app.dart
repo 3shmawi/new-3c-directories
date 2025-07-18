@@ -10,14 +10,14 @@ class NewsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConfig.appName,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.light,
-      home: BlocProvider(
-        create: (context) => AuthCtrl(),
-        child: LoginView(),
+    return BlocProvider(
+      create: (context) => AuthCtrl(),
+      child: MaterialApp(
+        title: AppConfig.appName,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.light,
+        home: LoginView(),
       ),
     );
   }

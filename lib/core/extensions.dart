@@ -19,3 +19,19 @@ extension Navigations on BuildContext {
     Navigator.pop(this);
   }
 }
+
+extension SnackBarExtension on BuildContext {
+  void showSnackBar(
+    String message, {
+    Color backgroundColor = Colors.green,
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        duration: duration,
+      ),
+    );
+  }
+}
