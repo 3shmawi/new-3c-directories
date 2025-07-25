@@ -15,7 +15,6 @@ class RegisterView extends StatelessWidget {
           context.showSnackBar(state.message, backgroundColor: Colors.red);
         } else if (state is AuthSuccessState) {
           context.showSnackBar('Registration successful');
-          // Navigate to login or home page
           context.pushReplacement(LoginView());
         }
       },

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/controller/auth_ctrl.dart';
 import 'package:new_3c/core/extensions.dart';
 import 'package:new_3c/views/auth/register_view.dart';
+import 'package:new_3c/views/layout/layout_view.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -15,7 +16,7 @@ class LoginView extends StatelessWidget {
           context.showSnackBar(state.message, backgroundColor: Colors.red);
         } else if (state is AuthSuccessState) {
           context.showSnackBar('Login successful');
-          //todo Navigate to home page or dashboard
+          context.pushReplacement(LayoutView());
         }
       },
       builder: (context, state) {
@@ -33,7 +34,7 @@ class LoginView extends StatelessWidget {
                   TextField(
                     controller: ctrl.userNameCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Userid',
+                      labelText: 'Email or Phone Number',
                     ),
                   ),
                   const SizedBox(height: 16.0),
@@ -67,7 +68,8 @@ class LoginView extends StatelessWidget {
                     children: [
                       Text("Don't have an account?"),
                       TextButton(
-                        onPressed: () => context.push(RegisterView()),
+                        onPressed: () =>
+                            context.pushReplacement(RegisterView()),
                         child: const Text('Register'),
                       ),
                     ],

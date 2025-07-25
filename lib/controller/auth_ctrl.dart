@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/core/app_regex.dart';
 import 'package:new_3c/models/user.dart';
 import 'package:new_3c/services/dio_helper.dart';
+import 'package:new_3c/services/local_storage.dart';
 
 class AuthCtrl extends Cubit<AuthStates> {
   AuthCtrl() : super(AuthInitialState());
@@ -43,6 +45,8 @@ class AuthCtrl extends Cubit<AuthStates> {
             user['password'] == password) {
           this.user = UserModel.fromJson(user);
           clearControllers();
+          final box = await HiveService().openBox("myUserData");
+          box.put("myData", username);
 
           emit(AuthSuccessState());
           return;
@@ -71,6 +75,21 @@ class AuthCtrl extends Cubit<AuthStates> {
     emit(AuthLoadingState());
 
     try {
+      if (!AppRegex.validateEmail(email)) {
+        emit(AuthErrorState("Invalid email format"));
+        return;
+      }
+      if (!AppRegex.validatePhone(phone)) {
+        emit(AuthErrorState("Invalid phone number format"));
+        return;
+      }
+      final usersResponse = await _http.get("users");
+      for (final user in usersResponse) {
+        if (user['email'] == email || user['phone'] == phone) {
+          emit(AuthErrorState("User with this email or phone already exists"));
+          return;
+        }
+      }
       final newUser = UserModel(
         name: username,
         password: password,

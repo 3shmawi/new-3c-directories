@@ -58,5 +58,36 @@ abstract class AppTheme {
         statusBarIconBrightness: Brightness.light,
       ),
     ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide(color: Color(AppConfig.primaryColor)),
+      ),
+      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide:
+            BorderSide(color: Color(AppConfig.primaryColor), width: 2.0),
+      ),
+      labelStyle: TextStyle(color: Color(AppConfig.primaryColor)),
+    ),
+    buttonTheme: ButtonThemeData(
+      buttonColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      minWidth: double.infinity,
+      height: 45,
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Color(AppConfig.primaryColor),
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        minimumSize: Size(double.infinity, 40),
+      ),
+    ),
   );
 }
