@@ -22,7 +22,6 @@ class AuthCtrl extends Cubit<AuthStates> {
 
   void login() {
     if (emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
-      print('Please fill in all fields');
       emit(AuthErrorState('Please fill in all fields'));
       return;
     }
@@ -72,7 +71,6 @@ class AuthCtrl extends Cubit<AuthStates> {
       } else {
         emit(AuthErrorState('An error occurred: ${error.toString()}'));
       }
-      emit(AuthErrorState(error.toString()));
     });
   }
 
