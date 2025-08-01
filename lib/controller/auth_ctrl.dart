@@ -47,6 +47,7 @@ class AuthCtrl extends Cubit<AuthStates> {
           clearControllers();
           final box = await HiveService().openBox("myUserData");
           box.put("myData", username);
+          box.put("myId", this.user?.id);
 
           emit(AuthSuccessState());
           return;
@@ -59,7 +60,6 @@ class AuthCtrl extends Cubit<AuthStates> {
   }
 
   void register() async {
-    //todo validate that users does not already exist by email or phone
     final username = userNameCtrl.text;
     final password = passwordCtrl.text;
     final email = emailCtrl.text;
@@ -96,11 +96,10 @@ class AuthCtrl extends Cubit<AuthStates> {
         email: email,
         phone: phone,
       );
-      final response = await _http.post(
+      await _http.post(
         "users",
         data: newUser.toJson(),
       );
-      user = UserModel.fromJson(response);
       clearControllers();
       emit(AuthSuccessState());
     } catch (error) {
@@ -108,8 +107,10 @@ class AuthCtrl extends Cubit<AuthStates> {
     }
   }
 
-  void logout() {
-    // Implement logout logic here
+  void logout() async {
+    final box = await HiveService().openBox("myUserData");
+    box.delete("myData");
+
     emit(AuthLogoutSuccessState());
   }
 
