@@ -8,6 +8,10 @@ class RovanApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+          bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+      )),
       home: SplashScreen(),
     );
   }
