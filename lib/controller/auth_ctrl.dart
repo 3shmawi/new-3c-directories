@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/core/auth_code_error_message.dart';
 
 class AuthCtrl extends Cubit<AuthStates> {
   AuthCtrl() : super(AuthInitialState());
@@ -38,36 +39,8 @@ class AuthCtrl extends Cubit<AuthStates> {
     }).catchError((error) {
       print('Login error: $error');
       if (error is FirebaseAuthException) {
-        switch (error.code) {
-          case 'user-not-found':
-            emit(AuthErrorState('No user found for that email.'));
-          case 'wrong-password':
-            emit(AuthErrorState('Wrong password provided for that user.'));
-          case 'invalid-email':
-            emit(AuthErrorState('The email address is not valid.'));
-          case 'user-disabled':
-            emit(AuthErrorState('The user has been disabled.'));
-          case 'too-many-requests':
-            emit(AuthErrorState('Too many requests. Please try again later.'));
-          case 'operation-not-allowed':
-            emit(AuthErrorState('Email/password accounts are not enabled.'));
-          case 'network-request-failed':
-            emit(AuthErrorState(
-                'Network request failed. Please check your connection.'));
-          case 'weak-password':
-            emit(AuthErrorState('The password is too weak.'));
-          case 'email-already-in-use':
-            emit(AuthErrorState(
-                'The email address is already in use by another account.'));
-          case 'invalid-credential':
-            emit(AuthErrorState('The credential is invalid or has expired.'));
-          case 'requires-recent-login':
-            emit(AuthErrorState(
-                'This operation requires recent authentication. Please log in again.'));
-
-          default:
-            emit(AuthErrorState('An unknown error occurred.'));
-        }
+        final errorMessage = authCodeErrorMessage(error.code);
+        emit(AuthErrorState(errorMessage));
       } else {
         emit(AuthErrorState('An error occurred: ${error.toString()}'));
       }
@@ -96,18 +69,8 @@ class AuthCtrl extends Cubit<AuthStates> {
     }).catchError((error) {
       print('Registration error: $error');
       if (error is FirebaseAuthException) {
-        switch (error.code) {
-          case 'email-already-in-use':
-            emit(AuthErrorState('The email address is already in use.'));
-          case 'invalid-email':
-            emit(AuthErrorState('The email address is not valid.'));
-          case 'operation-not-allowed':
-            emit(AuthErrorState('Email/password accounts are not enabled.'));
-          case 'weak-password':
-            emit(AuthErrorState('The password is too weak.'));
-          default:
-            emit(AuthErrorState('An unknown error occurred.'));
-        }
+        final errorMessage = authCodeErrorMessage(error.code);
+        emit(AuthErrorState(errorMessage));
       } else {
         emit(AuthErrorState('An error occurred: ${error.toString()}'));
       }
@@ -126,6 +89,7 @@ class AuthCtrl extends Cubit<AuthStates> {
       "created_at": DateTime.now().toUtc(),
       "photo_url":
           "https://images.unsplash.com/photo-1744039046459-411801eef170?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D",
+      "bio": "This is a sample bio",
       "uid": uid,
     });
   }

@@ -24,6 +24,10 @@ class LayoutScreen extends StatelessWidget {
                   label: "Home",
                 ),
                 BottomNavigationBarItem(
+                  icon: Icon(CupertinoIcons.group),
+                  label: "Users",
+                ),
+                BottomNavigationBarItem(
                   icon: Icon(CupertinoIcons.person),
                   label: "Profile",
                 ),
