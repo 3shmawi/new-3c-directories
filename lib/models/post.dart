@@ -1,11 +1,11 @@
 class PostModel {
-  final int? id;
+  final String? id;
   final String authorName;
   final String picture;
   final String title;
   final String publishedAt;
   final String description;
-  final int authorId;
+  final String authorId;
 
   PostModel({
     this.id,
@@ -19,13 +19,13 @@ class PostModel {
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-      id: json['id'] as int,
+      id: json['id'] as String?,
       authorName: json['authorName'] as String,
       picture: json['picture'] as String,
       title: json['title'] as String,
       publishedAt: json['publishedAt'] as String,
       description: json['description'] as String,
-      authorId: json['authorId'] as int,
+      authorId: json['authorId'] as String,
     );
   }
 
@@ -42,13 +42,13 @@ class PostModel {
   }
 
   PostModel copyWith({
-    int? id,
+    String? id,
     String? authorName,
     String? picture,
     String? title,
     String? publishedAt,
     String? description,
-    int? authorId,
+    String? authorId,
   }) {
     return PostModel(
       id: id ?? this.id,

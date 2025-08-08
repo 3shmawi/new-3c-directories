@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/controller/layout_ctrl.dart';
+import 'package:new_3c/controller/post_ctrl.dart';
 
 class LayoutView extends StatelessWidget {
   const LayoutView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => LayoutCtrl(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<LayoutCtrl>(
+          create: (context) => LayoutCtrl(),
+        ),
+        BlocProvider<PostCtrl>(
+          create: (context) => PostCtrl(),
+        ),
+      ],
       child: BlocBuilder<LayoutCtrl, LayoutStates>(
         builder: (context, state) {
           final layoutCtrl = LayoutCtrl.get(context);
