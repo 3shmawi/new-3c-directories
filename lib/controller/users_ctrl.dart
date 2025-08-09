@@ -16,7 +16,7 @@ class UsersCtrl {
           .orderBy("created_at", descending: true)
           .get();
       return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
-    } catch (e) {
+    } catch (error) {
       rethrow;
     }
   }
