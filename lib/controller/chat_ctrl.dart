@@ -20,6 +20,12 @@ class ChatCtrl {
     });
   }
 
+  DocumentReference userRef(String userId) => _database
+      .collection("YASSIN&ASER")
+      .doc("#")
+      .collection("users")
+      .doc(userId);
+
   void deleteChat(String chatId) {
     _database
         .collection("YASSIN&ASER")
@@ -30,6 +36,12 @@ class ChatCtrl {
         .catchError((error) {
       print('Error deleting chat: $error');
     });
+  }
+
+  String getMessagePageId(String senderId, String receiverId) {
+    final idsList = [senderId, receiverId];
+    idsList.sort();
+    return idsList.join('_');
   }
 
   void createChat(UserModel receiver) async {
@@ -57,5 +69,20 @@ class ChatCtrl {
         .catchError((error) {
       throw 'Error creating chat: $error';
     });
+  }
+
+  Future<UserModel> getUserById(String userId) async {
+    final doc = await _database
+        .collection("YASSIN&ASER")
+        .doc("#")
+        .collection('users')
+        .doc(userId)
+        .get();
+
+    if (doc.exists) {
+      return UserModel.fromMap(doc.data()!);
+    } else {
+      throw 'User not found';
+    }
   }
 }

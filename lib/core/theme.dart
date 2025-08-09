@@ -32,6 +32,7 @@ abstract class AppTheme {
           minimumSize: Size(double.infinity, 40)),
     ),
   );
+
   static final dark = ThemeData(
     colorScheme: ColorScheme.dark(
       primary: Colors.cyan,

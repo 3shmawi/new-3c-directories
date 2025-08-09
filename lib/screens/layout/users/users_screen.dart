@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/controller/chat_ctrl.dart';
 import 'package:new_3c/controller/users_ctrl.dart';
 import 'package:new_3c/models/user.dart';
 
@@ -9,59 +10,60 @@ class UsersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: FutureBuilder(
-          future: UsersCtrl().fetchUsers(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: SelectableText("Error: ${snapshot.error}"));
-            }
-            final users = snapshot.data;
-            if (users == null || users.isEmpty) {
-              return Center(child: Text("No users found"));
-            }
+        future: UsersCtrl().fetchUsers(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: SelectableText("Error: ${snapshot.error}"));
+          }
+          final users = snapshot.data;
+          if (users == null || users.isEmpty) {
+            return Center(child: Text("No users found"));
+          }
 
-            return ListView.separated(
-              padding: EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              itemBuilder: (context, index) {
-                return Container(
-                  clipBehavior: Clip.antiAliasWithSaveLayer,
-                  decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.cyan,
-                      ),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: ListTile(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+          return ListView.separated(
+            padding: EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            itemBuilder: (context, index) {
+              return Container(
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.cyan,
                     ),
-                    leading: CircleAvatar(
-                      backgroundImage: NetworkImage(users[index].photoURL),
-                    ),
-                    title: Text(users[index].displayName),
-                    subtitle: Text(
-                      users[index].email,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                    ),
-                    onTap: () {
-                      // Handle user tap if needed
-                    },
+                    borderRadius: BorderRadius.circular(10)),
+                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                );
-              },
-              separatorBuilder: (context, index) => SizedBox(
-                height: 15,
-              ),
-              itemCount: users.length,
-            );
-          }),
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(users[index].photoURL),
+                  ),
+                  title: Text(users[index].displayName),
+                  subtitle: Text(
+                    users[index].email,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                  onTap: () {
+                    ChatCtrl().createChat(users[index]);
+                  },
+                ),
+              );
+            },
+            separatorBuilder: (context, index) => SizedBox(
+              height: 15,
+            ),
+            itemCount: users.length,
+          );
+        },
+      ),
     );
   }
 }
