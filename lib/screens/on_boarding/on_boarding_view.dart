@@ -4,6 +4,8 @@ import 'package:new_3c/screens/on_boarding/widgets/app_bar_part.dart';
 import 'package:new_3c/screens/on_boarding/widgets/body_part.dart';
 import 'package:new_3c/screens/on_boarding/widgets/bottom_part.dart';
 
+import '../auth/login/login_screen.dart';
+
 class OnBoardingView extends StatefulWidget {
   const OnBoardingView({super.key});
 
@@ -29,9 +31,17 @@ class _OnBoardingViewState extends State<OnBoardingView> {
       bottomSheet: BottomPart(
         _logic,
         onNext: () {
-          setState(() {
-            _logic.nextPage();
-          });
+          if (_logic.isLastPage) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(),
+              ),
+            );
+          } else {
+            setState(() {
+              _logic.nextPage();
+            });
+          }
         },
         onPrevious: () {
           setState(() {
