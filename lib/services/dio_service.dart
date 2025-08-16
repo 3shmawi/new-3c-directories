@@ -157,9 +157,6 @@ class HttpUtil {
       throw "something went wrong";
     } catch (e) {
       if (e is DioException) {
-        // ErrorEntity eInfo = createErrorEntity(e);
-        //
-        // onError(eInfo);
         throw e.response!.data["message"]!;
       }
       rethrow;
