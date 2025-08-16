@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:new_3c/controller/chat_ctrl.dart';
 import 'package:new_3c/controller/users_ctrl.dart';
+import 'package:new_3c/core/extension.dart';
 import 'package:new_3c/models/user.dart';
+import 'package:new_3c/screens/layout/messages/message_details_page.dart';
 
 class UsersScreen extends StatelessWidget {
   const UsersScreen({super.key});
@@ -52,7 +53,9 @@ class UsersScreen extends StatelessWidget {
                     ),
                   ),
                   onTap: () {
-                    ChatCtrl().createChat(users[index]);
+                    context.navigateTo(MessageDetailsPage(
+                      receiver: users[index],
+                    ));
                   },
                 ),
               );

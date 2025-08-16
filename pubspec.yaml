@@ -38,6 +38,11 @@ dependencies:
   cloud_firestore: ^5.6.9
   flutter_bloc: ^9.1.1
   firebase_auth: ^5.6.2
+  flutter_chat_core: ^0.0.6
+  flutter_chat_ui: ^1.6.15
+  flutter_chat_types: ^3.6.2
+#  flutter_chat_core: ^2.0.0
+#  flutter_chat_ui: ^2.0.0
 
 dev_dependencies:
   flutter_test:
