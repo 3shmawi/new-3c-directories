@@ -17,6 +17,7 @@ class AppBarPart extends StatelessWidget implements PreferredSizeWidget {
       foregroundColor: Colors.transparent,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
+      centerTitle: false,
       title: RichText(
         text: TextSpan(
           children: [

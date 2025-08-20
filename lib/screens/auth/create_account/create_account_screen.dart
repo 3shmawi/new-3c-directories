@@ -1,15 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/screens/auth/create_account/create_account_screen.dart';
-import 'package:new_3c/screens/auth/widgets/header.dart';
+import 'package:new_3c/screens/auth/login/login_screen.dart';
 
-import '../forget_password/fogot_password_screen.dart';
 import '../widgets/auth_button.dart';
+import '../widgets/header.dart';
 import '../widgets/input_field.dart';
 import '../widgets/oauth2_button.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class CreateAccountScreen extends StatelessWidget {
+  const CreateAccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +19,7 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HeaderWidget("Welcome\nBack!"),
+              HeaderWidget("Create an\nAccount"),
               SizedBox(height: 36),
               InputFieldWidget(
                 hintText: "Username or Email",
@@ -32,36 +31,55 @@ class LoginScreen extends StatelessWidget {
                 hintText: "Password",
                 prefixIcon: CupertinoIcons.lock,
               ),
-              Align(
-                alignment: Alignment.topRight,
-                child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => ForgotPasswordScreen(),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(15),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "Forgot Password?",
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.red),
-                      ),
-                    )),
+              SizedBox(height: 30),
+              InputFieldWidget(
+                isPassword: true,
+                hintText: "Confirm Password",
+                prefixIcon: CupertinoIcons.lock,
               ),
-              SizedBox(height: 52),
+              SizedBox(height: 20),
+              Align(
+                alignment: Alignment.topLeft,
+                child: RichText(
+                  text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey[700],
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "By clicking the ",
+                        ),
+                        WidgetSpan(
+                          child: GestureDetector(
+                            onTap: () {
+                              // Handle Register click
+                            },
+                            child: Text(
+                              "Register",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFFF83758),
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextSpan(
+                          text: " button, you agree\nto the public offer",
+                        ),
+                      ]),
+                ),
+              ),
+              SizedBox(height: 38),
               AuthButtonWidget(
-                label: "Login",
+                label: "Create Account",
                 onPressed: () {
                   // Handle login action
                 },
               ),
-              SizedBox(height: 75),
+              SizedBox(height: 40),
               Align(
                 alignment: Alignment.center,
                 child: Text(
@@ -103,7 +121,7 @@ class LoginScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Create an account?",
+                    "I Already Have an Account",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -113,10 +131,10 @@ class LoginScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => CreateAccountScreen()));
+                          builder: (context) => LoginScreen()));
                     },
                     child: Text(
-                      "Sign Up",
+                      "login",
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

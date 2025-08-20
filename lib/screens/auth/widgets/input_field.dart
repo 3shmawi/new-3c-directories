@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class InputFieldWidget extends StatefulWidget {
-  const InputFieldWidget(
-      {this.hintText,
-      this.prefixIcon,
-      this.suffixIcon,
-      this.isPassword = false,
-      super.key});
+  const InputFieldWidget({
+    this.hintText,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.isPassword = false,
+    super.key,
+  });
 
   final String? hintText;
   final IconData? prefixIcon;

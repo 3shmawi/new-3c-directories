@@ -21,7 +21,17 @@ class ForgotPasswordScreen extends StatelessWidget {
                 prefixIcon: Icons.email,
                 hintText: "Enter your email address",
               ),
-              Text("lksdjf asl klaksdjf laksdfj l;akds jas"),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "* We will send you a message to set or reset your new password",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
               AuthButtonWidget(
                 label: "Submit",
                 onPressed: () {},
