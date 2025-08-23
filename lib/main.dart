@@ -1,6 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -56,6 +57,26 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  String? imageUrl;
+
+  void fetchDogImage() async {
+    try {
+      var response = await Dio().get('https://dog.ceo/api/breeds/image/random');
+      print('Response data: ${response.data}');
+      print('Image URL: ${response.data['message']}');
+      setState(() {
+        imageUrl = response.data['message'];
+      });
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    fetchDogImage();
+    super.initState();
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -105,6 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            if (imageUrl != null)
+              Image.network(imageUrl!)
+            else
+              const CircularProgressIndicator(),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -116,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: fetchDogImage,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
