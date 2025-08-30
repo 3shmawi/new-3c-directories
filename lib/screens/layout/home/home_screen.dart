@@ -1,5 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:new_3c/controller/chat_ctrl.dart';
+import 'package:new_3c/core/extension.dart';
+import 'package:new_3c/models/user.dart';
+
+import '../messages/message_details_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,24 +33,29 @@ class HomeScreen extends StatelessWidget {
               vertical: 8.0,
             ),
             itemBuilder: (context, index) {
-              final isGroup = chats[index].participants.length > 2;
-              if (isGroup) {
-                return chatItem(
-                  photUrl: chats[index].photoURL!,
-                  title: chats[index].displayName!,
-                  subtitle: chats[index].lastMessage,
-                );
-              }
+              //todo handle group chat
+              // final isGroup = chats[index].participants.length > 2;
+              // if (isGroup) {
+              //   return chatItem(
+              //     photUrl: chats[index].photoURL!,
+              //     title: chats[index].displayName!,
+              //     subtitle: chats[index].lastMessage,
+              //   );
+              // }
+              final myId = FirebaseAuth.instance.currentUser?.uid;
+              final userId = myId == chats[index].receiverId
+                  ? chats[index].senderId
+                  : chats[index].receiverId;
               return FutureBuilder(
-                  future: chatCtrl.getUserById(chats[index].receiverId!),
+                  future: chatCtrl.getUserById(userId!),
                   builder: (context, snapshot) {
                     if (snapshot.data == null) {
                       return Center(child: CircularProgressIndicator());
                     }
                     final user = snapshot.data!;
                     return chatItem(
-                      photUrl: user.photoURL,
-                      title: user.displayName,
+                      context: context,
+                      user: user,
                       subtitle: chats[index].lastMessage,
                     );
                   });
@@ -61,8 +71,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget chatItem(
-          {required String photUrl,
-          required String title,
+          {required BuildContext context,
+          required UserModel user,
           required String subtitle}) =>
       Container(
         clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -76,9 +86,9 @@ class HomeScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           leading: CircleAvatar(
-            backgroundImage: NetworkImage(photUrl),
+            backgroundImage: NetworkImage(user.photoURL),
           ),
-          title: Text(title),
+          title: Text(user.displayName),
           subtitle: Text(
             subtitle,
             style: TextStyle(
@@ -87,7 +97,9 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           onTap: () {
-// Handle user tap if needed
+            context.navigateTo(MessageDetailsPage(
+              receiver: user,
+            ));
           },
         ),
       );
