@@ -1,6 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 
@@ -56,6 +65,29 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  final firestore = FirebaseFirestore.instance;
+
+  void getCounterValue() async {
+    final doc = await firestore
+        .collection("k_k_h")
+        .doc("#")
+        .collection("counter")
+        .doc("count")
+        .get();
+
+    final data = doc.data()?["amount"];
+
+    setState(() {
+      _counter = data ?? 0;
+    });
+  }
+
+  @override
+  void initState() {
+    getCounterValue();
+    super.initState();
+  }
 
   void _incrementCounter() {
     setState(() {
