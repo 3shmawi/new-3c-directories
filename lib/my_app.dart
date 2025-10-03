@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/features/auth/auth.dart';
 
 import 'core/theme.dart';
 
@@ -11,7 +12,8 @@ class MyApp extends StatelessWidget {
       title: 'Modern Chat',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
+      home: const AuthPage(),
     );
   }
 }
