@@ -39,8 +39,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
   final firestore = FirebaseFirestore.instance;
 
   void getCounterValue() async {
@@ -52,10 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
         .get();
 
     final data = doc.data()?["amount"];
-
-    setState(() {
-      _counter = data ?? 0;
-    });
   }
 
   void updateCounterValue() async {
@@ -64,19 +58,26 @@ class _MyHomePageState extends State<MyHomePage> {
         .doc("#")
         .collection("counter")
         .doc("count")
-        .set({"amount": ++_counter}, SetOptions(merge: true));
+        .set({"amount": FieldValue.increment(1)}, SetOptions(merge: true));
   }
 
   void deleteCounterValue() async {
-    setState(() {
-      _counter = 0;
-    });
     await firestore
         .collection("k_k_h")
         .doc("#")
         .collection("counter")
         .doc("count")
         .delete();
+  }
+
+  Stream<int> counterStream() {
+    return firestore
+        .collection("k_k_h")
+        .doc("#")
+        .collection("counter")
+        .doc("count")
+        .snapshots()
+        .map((snapshot) => snapshot.data()?["amount"] ?? 0);
   }
 
   @override
@@ -105,10 +106,14 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            StreamBuilder<int>(
+                stream: counterStream(),
+                builder: (context, snapshot) {
+                  return Text(
+                    '${snapshot.data ?? 0}',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  );
+                }),
           ],
         ),
       ),
