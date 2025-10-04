@@ -22,7 +22,7 @@ class _DogApiPageState extends State<DogApiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dog API Page')),
+      appBar: AppBar(title: const Text('Dog API Page2')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
