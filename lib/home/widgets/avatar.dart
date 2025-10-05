@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 class Avatar extends StatelessWidget {
@@ -22,9 +24,16 @@ class Avatar extends StatelessWidget {
       border: Border.all(color: Colors.yellow, width: 3),
       boxShadow: _boxShadow(),
       image: DecorationImage(
-        image: NetworkImage(image),
+        image: isValidUrl()
+            ? NetworkImage(image)
+            : MemoryImage(base64Decode(image)),
       ),
     );
+  }
+
+  bool isValidUrl() {
+    Uri? uri = Uri.tryParse(image);
+    return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
   }
 
   List<BoxShadow> _boxShadow() {

@@ -15,7 +15,14 @@ class StoryItem extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Avatar(image),
-        Text(name),
+        Text(
+          name,
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
       ],
     );
   }
