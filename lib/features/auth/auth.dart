@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatefulWidget {
@@ -51,27 +52,39 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     return null;
   }
 
-  void _submit() {
-    if (_isSignIn) {
-      if (_signInKey.currentState!.validate()) {
-        // TODO: call your sign-in logic
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signing in...')),
-        );
-      }
-    } else {
-      if (_signUpKey.currentState!.validate()) {
-        if (_passCtrl.text != _confirmCtrl.text) {
+  final _auth = FirebaseAuth.instance;
+
+  void _submit() async {
+    try {
+      if (_isSignIn) {
+        if (_signInKey.currentState!.validate()) {
+          await _auth.signInWithEmailAndPassword(
+              email: _emailCtrl.text, password: _passCtrl.text);
+          // TODO: call your sign-in logic
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Passwords do not match')),
+            const SnackBar(content: Text('Signing in...')),
           );
-          return;
         }
-        // TODO: call your sign-up logic
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Creating account...')),
-        );
+      } else {
+        if (_signUpKey.currentState!.validate()) {
+          if (_passCtrl.text != _confirmCtrl.text) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Passwords do not match')),
+            );
+            return;
+          }
+          await _auth.createUserWithEmailAndPassword(
+              email: _emailCtrl.text, password: _passCtrl.text);
+          // TODO: call your sign-up logic
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Creating account...')),
+          );
+        }
       }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${error.toString()}')),
+      );
     }
   }
 
@@ -126,8 +139,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
 
                     // Glass card
                     _GlassCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: ListView(
                         children: [
                           _ModeSwitch(
                             isSignIn: _isSignIn,
@@ -265,8 +277,9 @@ class _GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final h = MediaQuery.sizeOf(context).height;
     return Container(
-      height: 450,
+      height: h * 0.589,
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
         color: cs.surface.withValues(alpha: 0.8),
