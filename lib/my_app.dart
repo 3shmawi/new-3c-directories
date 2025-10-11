@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'dog_api/dog_api_page.dart';
+import 'package:new_3c/random_user/random_user_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -8,7 +7,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: DogApiPage(),
+      debugShowCheckedModeBanner: false,
+      home: RandomUserPage(),
     );
   }
 }

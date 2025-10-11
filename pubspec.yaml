@@ -37,6 +37,7 @@ dependencies:
   dio: ^5.9.0
   pretty_dio_logger: ^1.4.0
   skeletonizer: ^1.4.3
+  confetti: ^0.8.0
 
 dev_dependencies:
   flutter_test:
