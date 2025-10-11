@@ -110,26 +110,61 @@ class _DisplayDogImageState extends State<DisplayDogImage> {
           _isUserInteracting = false;
         },
         child: hasData
-            ? ListWheelScrollView.useDelegate(
-                controller: _controller,
-                physics: const FixedExtentScrollPhysics(),
-                itemExtent: 200,
-                perspective: 0.0025, // منظور خفيف for modern look
-                diameterRatio: 3.0, // يقلل الانحناء
-                onSelectedItemChanged: (i) {
-                  _currentIndex = i % imagesUrl.length;
-                },
-                childDelegate: ListWheelChildLoopingListDelegate(
-                  children: List.generate(
-                    imagesUrl.length,
-                    (index) => Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: WebImageWidget(imagesUrl[index]),
+            ? Row(
+                children: [
+                  Expanded(
+                    child: ListWheelScrollView.useDelegate(
+                      controller: _controller,
+                      physics: const FixedExtentScrollPhysics(),
+                      itemExtent: 200,
+                      perspective: 0.0025, // منظور خفيف for modern look
+                      diameterRatio: 3.0, // يقلل الانحناء
+                      onSelectedItemChanged: (i) {
+                        _currentIndex = i % imagesUrl.length;
+                      },
+                      childDelegate: ListWheelChildLoopingListDelegate(
+                        children: List.generate(
+                          imagesUrl.length,
+                          (index) => Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: WebImageWidget(imagesUrl[index]),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: Transform.rotate(
+                      angle: 3.14159, // 180 degrees in radians
+                      child: ListWheelScrollView.useDelegate(
+                        controller: _controller,
+                        physics: const FixedExtentScrollPhysics(),
+                        itemExtent: 200,
+                        perspective: 0.0025, // منظور خفيف for modern look
+                        diameterRatio: 3.0, // يقلل الانحناء
+                        onSelectedItemChanged: (i) {
+                          _currentIndex = i % imagesUrl.length;
+                        },
+                        childDelegate: ListWheelChildLoopingListDelegate(
+                          children: List.generate(
+                            imagesUrl.length,
+                            (index) => Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Transform.rotate(
+                                    angle: 3.14159, // 180 degrees in radians
+
+                                    child: WebImageWidget(imagesUrl[index])),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               )
             : _EmptyState(onAdd: _onAddImagePressed),
       ),

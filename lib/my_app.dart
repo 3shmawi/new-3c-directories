@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:new_3c/screens/display_dog_imge.dart';
+import 'package:new_3c/screens/display_user_profile.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -8,7 +8,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: DisplayDogImage(),
+      // home: DisplayDogImage(),
+      home: DisplayUserProfile(),
     );
   }
 }

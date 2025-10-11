@@ -22,7 +22,7 @@ class WebImageWidget extends StatelessWidget {
         final img = html.ImageElement();
         img.src = imageUrl;
         img.draggable = false;
-        img.style.width = '50%';
+        img.style.width = '100%';
         img.style.height = '100%';
 
         // Image loading error handling
