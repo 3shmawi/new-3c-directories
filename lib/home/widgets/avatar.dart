@@ -3,15 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class Avatar extends StatelessWidget {
-  const Avatar(this.image, {super.key});
+  const Avatar(this.image, {this.size = const Size.square(50), super.key});
 
   final String image;
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50,
-      width: 50,
+      height: size.height,
+      width: size.width,
       alignment: Alignment.center,
       decoration: _boxDecoration(),
     );
