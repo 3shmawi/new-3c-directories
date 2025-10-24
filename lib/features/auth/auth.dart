@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:new_3c/features/home/home_pag.dart';
+import 'package:new_3c/model/user_model.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -14,6 +17,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   // Controllers
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _phoneNumber = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
 
@@ -28,6 +32,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _phoneNumber.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _confirmCtrl.dispose();
@@ -40,8 +45,8 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     return ok ? null : 'Enter a valid email';
   }
 
-  String? _passwordValidator(String? v) {
-    if (v == null || v.length < 6) return 'At least 6 characters';
+  String? _passwordValidator(String? value) {
+    if (value == null || value.length < 6) return 'At least 6 characters';
     return null;
   }
 
@@ -52,6 +57,15 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     return null;
   }
 
+  String? _phoneValidator(String? v) {
+    if (!_isSignIn && (v == null || v.trim().isEmpty)) {
+      return 'Phone number is required';
+    }
+    final ok = RegExp(r'^\+?[0-9]{7,15}$').hasMatch(v!.trim());
+    return ok ? null : 'Enter a valid phone number';
+  }
+
+  //firebase services
   final _auth = FirebaseAuth.instance;
 
   void _submit() async {
@@ -61,9 +75,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
           await _auth.signInWithEmailAndPassword(
               email: _emailCtrl.text, password: _passCtrl.text);
           // TODO: call your sign-in logic
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Signing in...')),
-          );
+
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            return const HomePag();
+          }));
         }
       } else {
         if (_signUpKey.currentState!.validate()) {
@@ -73,9 +88,27 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
             );
             return;
           }
-          await _auth.createUserWithEmailAndPassword(
+          final userCredential = await _auth.createUserWithEmailAndPassword(
               email: _emailCtrl.text, password: _passCtrl.text);
-          // TODO: call your sign-up logic
+
+          final newUser = UserModel(
+            id: userCredential.user?.uid,
+            name: _nameCtrl.text,
+            email: _emailCtrl.text,
+            phoneNumber: _phoneNumber.text,
+            isActive: true,
+            profilePictureUrl:
+                "https://i.pinimg.com/474x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg",
+          );
+
+          await FirebaseFirestore.instance
+              .collection("k_k_h")
+              .doc("#")
+              .collection("users")
+              .doc(newUser.id)
+              .set(newUser.toJson());
+
+          /// todo navigate to home page after sign up
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Creating account...')),
           );
@@ -184,6 +217,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                                     key: const ValueKey('sign-up'),
                                     nameCtrl: _nameCtrl,
                                     emailCtrl: _emailCtrl,
+                                    phoneCtrl: _phoneNumber,
                                     passCtrl: _passCtrl,
                                     confirmCtrl: _confirmCtrl,
                                     obscurePass: _obscurePass,
@@ -195,6 +229,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                                     nameValidator: _nameValidator,
                                     emailValidator: _emailValidator,
                                     passwordValidator: _passwordValidator,
+                                    phoneValidator: _phoneValidator,
                                     onSubmit: _submit,
                                   ),
                           ),
@@ -464,6 +499,7 @@ class _SignUpForm extends StatelessWidget {
     super.key,
     required this.nameCtrl,
     required this.emailCtrl,
+    required this.phoneCtrl,
     required this.passCtrl,
     required this.confirmCtrl,
     required this.obscurePass,
@@ -473,11 +509,13 @@ class _SignUpForm extends StatelessWidget {
     required this.nameValidator,
     required this.emailValidator,
     required this.passwordValidator,
+    required this.phoneValidator,
     required this.onSubmit,
   });
 
   final TextEditingController nameCtrl;
   final TextEditingController emailCtrl;
+  final TextEditingController phoneCtrl;
   final TextEditingController passCtrl;
   final TextEditingController confirmCtrl;
   final bool obscurePass;
@@ -486,6 +524,7 @@ class _SignUpForm extends StatelessWidget {
   final VoidCallback onToggleConfirm;
   final String? Function(String?) nameValidator;
   final String? Function(String?) emailValidator;
+  final String? Function(String?) phoneValidator;
   final String? Function(String?) passwordValidator;
   final VoidCallback onSubmit;
 
@@ -517,6 +556,17 @@ class _SignUpForm extends StatelessWidget {
               prefixIcon: Icon(Icons.alternate_email),
             ),
             validator: emailValidator,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: phoneCtrl,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Phone Number',
+              hintText: '+201234567890',
+              prefixIcon: Icon(Icons.phone),
+            ),
+            validator: phoneValidator,
           ),
           const SizedBox(height: 12),
           TextFormField(

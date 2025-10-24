@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:new_3c/features/auth/auth.dart';
+import 'package:new_3c/features/splash.dart';
 
 import 'core/theme.dart';
 
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      home: const AuthPage(),
+      home: const SplashScreen(),
     );
   }
 }
