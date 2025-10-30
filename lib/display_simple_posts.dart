@@ -1,8 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-class Display extends StatelessWidget {
+class Display extends StatefulWidget {
   const Display({super.key});
+
+  @override
+  State<Display> createState() => _DisplayState();
+}
+
+class _DisplayState extends State<Display> {
+  final titleCtrl = TextEditingController();
+  final descCtrl = TextEditingController();
+  final imgUrlCtrl = TextEditingController();
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,20 +59,132 @@ class Display extends StatelessWidget {
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
                   final post = posts[index];
-                  return Column(
-                    children: [
-                      Text(
-                        post['title'],
-                      ),
-                      Text(post["authorName"]),
-                      Divider(),
-                      SizedBox(
-                        height: 20,
-                      )
-                    ],
+                  return InkWell(
+                    onLongPress: () async {
+                      await Dio().delete(
+                          "https://680ce6282ea307e081d55f2a.mockapi.io/posts/${post["id"]}");
+
+                      setState(() {});
+                    },
+                    child: Column(
+                      children: [
+                        Text(
+                          post['title'],
+                        ),
+                        Text(post["authorName"]),
+                        Text(post["description"]),
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundImage: NetworkImage(post["picture"]),
+                        ),
+                        Divider(),
+                        SizedBox(
+                          height: 20,
+                        )
+                      ],
+                    ),
                   );
                 });
           }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(15),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: titleCtrl,
+                        decoration: InputDecoration(hintText: "Title"),
+                      ),
+                      TextField(
+                        controller: descCtrl,
+                        decoration: InputDecoration(hintText: "Description"),
+                      ),
+                      TextField(
+                        controller: imgUrlCtrl,
+                        decoration: InputDecoration(hintText: "Img url..."),
+                      ),
+                      SizedBox(
+                        height: 60,
+                      ),
+                      isLoading
+                          ? CircularProgressIndicator()
+                          : ElevatedButton(
+                              onPressed: () async {
+                                final title = titleCtrl.text;
+                                final desc = descCtrl.text;
+                                final imgUrl = imgUrlCtrl.text;
+
+                                if (title.isEmpty ||
+                                    desc.isEmpty ||
+                                    imgUrl.isEmpty) {
+                                  Navigator.of(context).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Please fill all fields"),
+                                    ),
+                                  );
+                                }
+
+                                final data = {
+                                  "title": title,
+                                  "description": desc,
+                                  "picture": imgUrl,
+                                  "publishedAt":
+                                      DateTime.now().toIso8601String(),
+                                  "authorName": "MoRe H",
+                                };
+
+                                setState(() {
+                                  isLoading = true;
+                                });
+
+                                try {
+                                  await Dio().post(
+                                      "https://680ce6282ea307e081d55f2a.mockapi.io/posts",
+                                      data: data);
+
+                                  setState(() {
+                                    isLoading = false;
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text("successfully"),
+                                      ),
+                                    );
+                                  });
+                                } catch (error) {
+                                  setState(() {
+                                    isLoading = false;
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content:
+                                            Text("Error, ${error.toString()}"),
+                                      ),
+                                    );
+                                  });
+                                }
+                              },
+                              child: Text("Publish"),
+                            )
+                    ],
+                  ),
+                );
+              });
+          setState(() {});
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
 }
