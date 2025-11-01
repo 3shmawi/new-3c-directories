@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 
-class SendFieldWidget extends StatelessWidget {
+import 'messages_provider.dart';
+
+class SendFieldWidget extends StatefulWidget {
   const SendFieldWidget({super.key});
+
+  @override
+  State<SendFieldWidget> createState() => _SendFieldWidgetState();
+}
+
+class _SendFieldWidgetState extends State<SendFieldWidget> {
+  final messageCtrl = TextEditingController();
+  late final ctrl = StringListProvider.of(context);
 
   @override
   Widget build(BuildContext context) {
@@ -11,6 +21,7 @@ class SendFieldWidget extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
+              controller: messageCtrl,
               decoration: InputDecoration(
                 hintText: "Message...",
                 prefixIcon: IconButton(
@@ -44,7 +55,15 @@ class SendFieldWidget extends StatelessWidget {
         ),
         FloatingActionButton.small(
           shape: CircleBorder(),
-          onPressed: () {},
+          onPressed: () {
+            if (messageCtrl.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Please write anything")));
+            } else {
+              ctrl.addString(messageCtrl.text);
+              messageCtrl.clear();
+            }
+          },
           child: Icon(
             Icons.send,
             size: 20,

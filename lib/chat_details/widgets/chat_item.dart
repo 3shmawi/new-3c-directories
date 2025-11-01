@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'messages_provider.dart';
+
 class ChatItem extends StatelessWidget {
   const ChatItem({
     required this.isMyMessage,
+    required this.message,
     super.key,
   });
 
   final bool isMyMessage;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +37,36 @@ class ChatItem extends StatelessWidget {
                   bottomRight: !isMyMessage ? Radius.circular(15) : Radius.zero,
                 ),
               ),
-              child: Text(
-                "message from me kjasdf;k asdkflj al;ds as;dkljasdkf ja;dksfj al;dksfj adkjl sdkfjl kdsfj adksfjl;dsf l;ksj;ksl;kdl;kdslkdsflkdsaldksfa;dksaldka s;dfl;k sadk lfas dlfk;jas dfl;k asjdfl;kas jdf sajkfas dlf; jsdl;kds f;lkdsjf al;dksfa;dkf ldksf;dksfdksjldksfldksjldksf as;dkflas;dkfasdfkj;ldkfj as;dkfj asfljsadf j",
+              child: InkWell(
+                onLongPress: () {
+                  showDialog(
+                      context: context,
+                      builder: (_) {
+                        return AlertDialog.adaptive(
+                          title: Text("Delete message?!"),
+                          content: Text(
+                              "Are you sure you need to delete this message?"),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  StringListProvider.of(context)
+                                      .removeString(message);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("confirm")),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("cancel"),
+                            ),
+                          ],
+                        );
+                      });
+                },
+                child: Text(
+                  message,
+                ),
               ),
             ),
             Text("  03:00 PM",
