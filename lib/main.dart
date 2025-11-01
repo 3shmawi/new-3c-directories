@@ -22,9 +22,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,13 +59,39 @@ class HomeScreen extends StatelessWidget {
 
               // success with data
               return Text(
-                "Count: ${data['value3']}",
+                "Count: ${data['value']}",
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
                 ),
               );
             }),
+      ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              FirebaseFirestore.instance
+                  .collection("Omar/#/counter")
+                  .doc("count2")
+                  .update({"value": FieldValue.increment(1)});
+              setState(() {});
+            },
+            child: Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              FirebaseFirestore.instance
+                  .collection("Omar/#/counter")
+                  .doc("count2")
+                  .update({"value": FieldValue.increment(-1)});
+              setState(() {});
+              //todo implement decrement
+            },
+            child: Icon(Icons.remove),
+          ),
+        ],
       ),
     );
   }
