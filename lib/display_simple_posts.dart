@@ -61,8 +61,33 @@ class _DisplayState extends State<Display> {
                   final post = posts[index];
                   return InkWell(
                     onLongPress: () async {
-                      await Dio().delete(
-                          "https://680ce6282ea307e081d55f2a.mockapi.io/posts/${post["id"]}");
+                      await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog.adaptive(
+                              title: Text("Delete post?"),
+                              content: Text(
+                                  "Are you sure you need to delete this post?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: Navigator.of(context).pop,
+                                  child: Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    try {
+                                      await Dio().delete(
+                                        "https://680ce6282ea307e081d55f2a.mockapi.io/posts/${post["id"]}",
+                                      );
+                                    } finally {
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
+                                  child: Text("Confirm"),
+                                ),
+                              ],
+                            );
+                          });
 
                       setState(() {});
                     },
@@ -77,10 +102,21 @@ class _DisplayState extends State<Display> {
                           radius: 30,
                           backgroundImage: NetworkImage(post["picture"]),
                         ),
+                        IconButton(
+                            onPressed: () {
+                              titleCtrl.text = post['title'];
+                              descCtrl.text = post['description'];
+                              imgUrlCtrl.text = post['picture'];
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return createOrUpdatePost(context,
+                                        postId: post['id']);
+                                  });
+                              setState(() {});
+                            },
+                            icon: Icon(Icons.edit)),
                         Divider(),
-                        SizedBox(
-                          height: 20,
-                        )
                       ],
                     ),
                   );
@@ -91,99 +127,112 @@ class _DisplayState extends State<Display> {
           showModalBottomSheet(
               context: context,
               builder: (context) {
-                return Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(15),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: titleCtrl,
-                        decoration: InputDecoration(hintText: "Title"),
-                      ),
-                      TextField(
-                        controller: descCtrl,
-                        decoration: InputDecoration(hintText: "Description"),
-                      ),
-                      TextField(
-                        controller: imgUrlCtrl,
-                        decoration: InputDecoration(hintText: "Img url..."),
-                      ),
-                      SizedBox(
-                        height: 60,
-                      ),
-                      isLoading
-                          ? CircularProgressIndicator()
-                          : ElevatedButton(
-                              onPressed: () async {
-                                final title = titleCtrl.text;
-                                final desc = descCtrl.text;
-                                final imgUrl = imgUrlCtrl.text;
-
-                                if (title.isEmpty ||
-                                    desc.isEmpty ||
-                                    imgUrl.isEmpty) {
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Please fill all fields"),
-                                    ),
-                                  );
-                                }
-
-                                final data = {
-                                  "title": title,
-                                  "description": desc,
-                                  "picture": imgUrl,
-                                  "publishedAt":
-                                      DateTime.now().toIso8601String(),
-                                  "authorName": "MoRe H",
-                                };
-
-                                setState(() {
-                                  isLoading = true;
-                                });
-
-                                try {
-                                  await Dio().post(
-                                      "https://680ce6282ea307e081d55f2a.mockapi.io/posts",
-                                      data: data);
-
-                                  setState(() {
-                                    isLoading = false;
-                                    Navigator.of(context).pop();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text("successfully"),
-                                      ),
-                                    );
-                                  });
-                                } catch (error) {
-                                  setState(() {
-                                    isLoading = false;
-                                    Navigator.of(context).pop();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content:
-                                            Text("Error, ${error.toString()}"),
-                                      ),
-                                    );
-                                  });
-                                }
-                              },
-                              child: Text("Publish"),
-                            )
-                    ],
-                  ),
-                );
+                return createOrUpdatePost(context);
               });
           setState(() {});
         },
         child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  Container createOrUpdatePost(BuildContext context, {String? postId}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(15),
+        ),
+      ),
+      child: Column(
+        children: [
+          TextField(
+            controller: titleCtrl,
+            decoration: InputDecoration(hintText: "Title"),
+          ),
+          TextField(
+            controller: descCtrl,
+            decoration: InputDecoration(hintText: "Description"),
+          ),
+          TextField(
+            controller: imgUrlCtrl,
+            decoration: InputDecoration(hintText: "Img url..."),
+          ),
+          SizedBox(
+            height: 60,
+          ),
+          isLoading
+              ? CircularProgressIndicator()
+              : ElevatedButton(
+                  onPressed: () async {
+                    final title = titleCtrl.text;
+                    final desc = descCtrl.text;
+                    final imgUrl = imgUrlCtrl.text;
+
+                    if (title.isEmpty || desc.isEmpty || imgUrl.isEmpty) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Please fill all fields"),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final data = {
+                      "title": title,
+                      "description": desc,
+                      "picture": imgUrl,
+                      "publishedAt": DateTime.now().toIso8601String(),
+                      "authorName": "MoRe H",
+                    };
+
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    try {
+                      if (postId == null) {
+                        await Dio().post(
+                          "https://680ce6282ea307e081d55f2a.mockapi.io/posts",
+                          data: data,
+                        );
+                      } else {
+                        await Dio().put(
+                          "https://680ce6282ea307e081d55f2a.mockapi.io/posts/$postId",
+                          data: data,
+                        );
+                      }
+
+                      setState(() {
+                        isLoading = false;
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("successfully"),
+                          ),
+                        );
+                      });
+                    } catch (error) {
+                      setState(() {
+                        isLoading = false;
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Error, ${error.toString()}"),
+                          ),
+                        );
+                      });
+                    } finally {
+                      titleCtrl.clear();
+                      descCtrl.clear();
+                      imgUrlCtrl.clear();
+                    }
+                  },
+                  child: Text(postId == null ? "Publish" : "Edit"),
+                )
+        ],
       ),
     );
   }
