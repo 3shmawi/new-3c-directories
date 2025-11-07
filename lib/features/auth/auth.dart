@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/features/home/home_pag.dart';
 import 'package:new_3c/model/user_model.dart';
+
+import '../chat/chat.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -77,7 +78,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
           // TODO: call your sign-in logic
 
           Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            return const HomePag();
+            return const ChatScreen();
           }));
         }
       } else {

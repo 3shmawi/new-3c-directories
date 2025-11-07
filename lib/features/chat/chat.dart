@@ -1,0 +1,1191 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+import 'model/message.dart';
+
+class ChatScreen extends StatefulWidget {
+  const ChatScreen({super.key});
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
+  final List<Message> _messages = [
+    Message(
+      id: 'm1',
+      text: "Hey! 👋 Ready for later?",
+      senderId: "false",
+      time: DateTime.now().subtract(const Duration(minutes: 12)),
+    ),
+    Message(
+      id: 'm2',
+      text: "Yesss! Share the location?",
+      senderId: "false",
+      time: DateTime.now().subtract(const Duration(minutes: 11)),
+      seen: true,
+    ),
+    Message(
+      id: 'm3',
+      text: "",
+      senderId: "false",
+      time: DateTime.now().subtract(const Duration(minutes: 9)),
+    ),
+    Message(
+      id: 'm4',
+      text: "Here you go 📍",
+      senderId: "false",
+      time: DateTime.now().subtract(const Duration(minutes: 9)),
+    ),
+  ];
+
+  final _listController = ScrollController();
+  final _textController = TextEditingController();
+  final _focusNode = FocusNode();
+
+  bool _showScrollToBottom = false;
+  bool _isTyping = false; // other user typing indicator
+  bool _recording = false;
+  bool _recordingCancelled = false;
+  late AnimationController _recordPulse;
+  late AnimationController _typingDots;
+  Timer? _typingMockTimer;
+
+  // For “slide to cancel”
+  Offset _dragOffset = Offset.zero;
+  double _cancelThreshold = 120; // drag left to cancel
+
+  @override
+  void initState() {
+    super.initState();
+
+    _recordPulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+      lowerBound: 0.9,
+      upperBound: 1.05,
+    )..repeat(reverse: true);
+
+    _typingDots = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+
+    _listController.addListener(() {
+      final nearBottom = _listController.offset <= 50;
+      if (_showScrollToBottom == nearBottom) return;
+      setState(() => _showScrollToBottom = !nearBottom);
+    });
+
+    // Fake “other user typing” every 20 seconds (demo)
+    _typingMockTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      setState(() => _isTyping = true);
+      Future.delayed(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        setState(() {
+          _isTyping = false;
+          _messages.insert(
+            0,
+            Message(
+              id: UniqueKey().toString(),
+              text: "Typing… actually I’m on my way 🚗",
+              senderId: "false",
+              time: DateTime.now(),
+            ),
+          );
+        });
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _typingMockTimer?.cancel();
+    _listController.dispose();
+    _textController.dispose();
+    _focusNode.dispose();
+    _recordPulse.dispose();
+    _typingDots.dispose();
+    super.dispose();
+  }
+
+  void _sendText() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _messages.insert(
+        0,
+        Message(
+          id: UniqueKey().toString(),
+          text: text,
+          senderId: "false",
+          time: DateTime.now(),
+          seen: false,
+        ),
+      );
+      _textController.clear();
+    });
+    _scrollToBottomSmooth();
+  }
+
+  void _scrollToBottomSmooth() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_listController.hasClients) return;
+      _listController.animateTo(
+        0,
+        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
+  }
+
+  void _openAttachSheet() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            children: [
+              _AttachItem(
+                icon: Icons.photo,
+                label: "Gallery",
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMockImage();
+                },
+              ),
+              _AttachItem(
+                icon: Icons.photo_camera,
+                label: "Camera",
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMockImage();
+                },
+              ),
+              _AttachItem(
+                icon: Icons.insert_drive_file,
+                label: "File",
+                onTap: () {
+                  Navigator.pop(context);
+                  _showSnack("File picker UI here");
+                },
+              ),
+              _AttachItem(
+                icon: Icons.location_on,
+                label: "Location",
+                onTap: () {
+                  Navigator.pop(context);
+                  _showSnack("Location picker UI here");
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addMockImage() {
+    setState(() {
+      _messages.insert(
+        0,
+        Message(
+          id: UniqueKey().toString(),
+          text: "",
+          senderId: "false",
+          time: DateTime.now(),
+          seen: false,
+        ),
+      );
+    });
+    _scrollToBottomSmooth();
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  // ————— MIC (hold to record) —————
+
+  void _startRecording() {
+    setState(() {
+      _recording = true;
+      _recordingCancelled = false;
+      _dragOffset = Offset.zero;
+    });
+  }
+
+  void _updateDrag(Offset delta) {
+    // Only horizontal slide matters (left to cancel)
+    setState(() {
+      _dragOffset += delta;
+      if (_dragOffset.dx < -_cancelThreshold) {
+        _recordingCancelled = true;
+      } else {
+        _recordingCancelled = false;
+      }
+    });
+  }
+
+  void _stopRecording() {
+    final cancelled = _recordingCancelled;
+    setState(() {
+      _recording = false;
+      _recordingCancelled = false;
+      _dragOffset = Offset.zero;
+    });
+    if (cancelled) {
+      _showSnack("Recording cancelled");
+      return;
+    }
+    // Add a mock audio bubble to the list
+    setState(() {
+      _messages.insert(
+        0,
+        Message(
+          id: UniqueKey().toString(),
+          text: "",
+          senderId: "false",
+          time: DateTime.now(),
+          seen: false,
+        ),
+      );
+    });
+    _scrollToBottomSmooth();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      backgroundColor: cs.surface,
+      appBar: _buildAppBar(cs),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: NotificationListener<UserScrollNotification>(
+                  onNotification: (_) => false,
+                  child: ListView.builder(
+                    controller: _listController,
+                    reverse: true,
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                    itemCount: _messages.length + (_isTyping ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (_isTyping && index == 0) {
+                        return const _TypingIndicator();
+                      }
+                      final msg = _messages[_isTyping ? index - 1 : index];
+                      final next = (_isTyping ? index - 2 : index - 1) >= 0
+                          ? _messages[_isTyping ? index - 2 : index - 1]
+                          : null;
+                      final showAvatar = !(true) &&
+                          (next == null || true || _minGap(next, msg));
+                      return _MessageRow(
+                        message: msg,
+                        showAvatar: showAvatar,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              _Composer(
+                controller: _textController,
+                focusNode: _focusNode,
+                onAttach: _openAttachSheet,
+                onSend: _sendText,
+                onStartRecord: _startRecording,
+                onStopRecord: _stopRecording,
+                onDragUpdate: _updateDrag,
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ],
+          ),
+          // Recording overlay
+          if (_recording)
+            _RecordingOverlay(
+              pulse: _recordPulse,
+              dragOffset: _dragOffset,
+              cancelled: _recordingCancelled,
+              cancelThreshold: _cancelThreshold,
+            ),
+          // Scroll-to-bottom FAB
+          if (_showScrollToBottom)
+            Positioned(
+              right: 16,
+              bottom: 96,
+              child: FloatingActionButton.small(
+                heroTag: 'scroll_bottom',
+                onPressed: _scrollToBottomSmooth,
+                child: const Icon(Icons.keyboard_arrow_down),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  bool _minGap(Message a, Message b) {
+    return b.time.difference(a.time).inMinutes.abs() >= 3;
+  }
+
+  PreferredSizeWidget _buildAppBar(ColorScheme cs) {
+    return AppBar(
+      elevation: 0,
+      scrolledUnderElevation: 2,
+      titleSpacing: 0,
+      title: Row(
+        children: [
+          const SizedBox(width: 8),
+          Stack(
+            children: [
+              const CircleAvatar(
+                radius: 20,
+                backgroundImage: NetworkImage(
+                  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400",
+                ),
+              ),
+              Positioned(
+                bottom: 2,
+                right: 2,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: cs.surface, width: 1.5),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Alex Carter",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                    )),
+                Row(
+                  children: [
+                    Icon(Icons.lock, size: 14, color: cs.outline),
+                    const SizedBox(width: 4),
+                    Text(
+                      "End-to-end encrypted",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: cs.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.videocam_outlined),
+          onPressed: () => _showSnack("Video call UI"),
+        ),
+        IconButton(
+          icon: const Icon(Icons.call_outlined),
+          onPressed: () => _showSnack("Voice call UI"),
+        ),
+        PopupMenuButton<String>(
+          onSelected: (v) => _showSnack(v),
+          itemBuilder: (_) => const [
+            PopupMenuItem(value: "View profile", child: Text("View profile")),
+            PopupMenuItem(value: "Mute", child: Text("Mute notifications")),
+            PopupMenuItem(value: "Search", child: Text("Search in chat")),
+            PopupMenuItem(value: "Clear", child: Text("Clear chat")),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ————————————————————————————————————————————————
+// Message Row & Bubbles
+// ————————————————————————————————————————————————
+
+class _MessageRow extends StatelessWidget {
+  const _MessageRow({
+    required this.message,
+    required this.showAvatar,
+  });
+
+  final Message message;
+  final bool showAvatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMe = true;
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 6,
+        bottom: 6,
+        left: isMe ? 48 : 8,
+        right: isMe ? 8 : 48,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isMe) ...[
+            AnimatedOpacity(
+              opacity: showAvatar ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: CircleAvatar(
+                radius: 14,
+                backgroundImage: const NetworkImage(
+                  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400",
+                ),
+                foregroundColor: Colors.transparent,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              child: _Bubble(message: message),
+            ),
+          ),
+          if (isMe) const SizedBox(width: 4),
+          if (isMe)
+            Icon(
+              message.seen ? Icons.done_all : Icons.check,
+              size: 16,
+              color: message.seen
+                  ? const Color(0xFF4C7CF5)
+                  : Theme.of(context).colorScheme.outline,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Bubble extends StatelessWidget {
+  const _Bubble({required this.message});
+  final Message message;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isMe = false;
+
+    final bg = isMe
+        ? LinearGradient(
+            colors: [const Color(0xFF4C7CF5), const Color(0xFF6AA4FF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
+        : LinearGradient(
+            colors: [
+              cs.surfaceContainerHighest,
+              cs.surfaceContainerHigh,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
+
+    final bubble = Container(
+      decoration: BoxDecoration(
+        gradient: bg,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.only(
+        left: 12,
+        right: 12,
+        top: 8,
+        bottom: 8,
+      ),
+      child: _bubbleContent(context, isMe),
+    );
+
+    return bubble;
+  }
+
+  Widget _bubbleContent(BuildContext context, bool isMe) {
+    final onMyBubble =
+        isMe ? Colors.white : Theme.of(context).colorScheme.onSurface;
+    final timeStyle = TextStyle(
+      fontSize: 10,
+      color: isMe
+          ? Colors.white.withValues(alpha: 0.85)
+          : Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    return Column(
+      crossAxisAlignment:
+          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        SelectableText(
+          message.text,
+          style: TextStyle(
+            color: isMe ? Colors.white : onMyBubble,
+            fontSize: 15,
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(_formatTime(message.time), style: timeStyle),
+      ],
+    );
+  }
+
+  String _formatTime(DateTime t) {
+    final h = t.hour.toString().padLeft(2, '0');
+    final m = t.minute.toString().padLeft(2, '0');
+    return "$h:$m";
+  }
+}
+
+class _AudioBubble extends StatefulWidget {
+  const _AudioBubble({
+    required this.isMe,
+    required this.time,
+    required this.length,
+  });
+  final bool isMe;
+  final DateTime time;
+  final Duration length;
+
+  @override
+  State<_AudioBubble> createState() => _AudioBubbleState();
+}
+
+class _AudioBubbleState extends State<_AudioBubble>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _wave;
+  bool _playing = false;
+  Duration _pos = Duration.zero;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _wave = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+      lowerBound: 0.6,
+      upperBound: 1.0,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _wave.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _toggle() {
+    if (_playing) {
+      _timer?.cancel();
+    } else {
+      _timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+        setState(() {
+          _pos += const Duration(milliseconds: 200);
+          if (_pos >= widget.length) {
+            _pos = Duration.zero;
+            _playing = false;
+            _timer?.cancel();
+          }
+        });
+      });
+    }
+    setState(() => _playing = !_playing);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final on = widget.isMe ? Colors.white : cs.onSurface;
+    final subtle = widget.isMe ? Colors.white70 : cs.onSurfaceVariant;
+
+    String fmt(Duration d) =>
+        "${d.inMinutes.remainder(60).toString().padLeft(2, '0')}:${(d.inSeconds.remainder(60)).toString().padLeft(2, '0')}";
+
+    return Column(
+      crossAxisAlignment:
+          widget.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: _toggle,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.isMe
+                      ? Colors.white24
+                      : cs.surfaceTint.withValues(alpha: 0.06),
+                ),
+                child: Icon(
+                  _playing ? Icons.pause : Icons.play_arrow,
+                  color: on,
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 120,
+              height: 28,
+              child: AnimatedBuilder(
+                animation: _wave,
+                builder: (_, __) {
+                  return CustomPaint(
+                    painter: _WavePainter(
+                        progress: _pos.inMilliseconds /
+                            max(1, widget.length.inMilliseconds),
+                        amp: _wave.value,
+                        color: on),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(fmt(widget.length),
+                style: TextStyle(fontSize: 12, color: subtle)),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "${fmt(_pos)} • ${_time(widget.time)}",
+          style: TextStyle(fontSize: 10, color: subtle),
+        )
+      ],
+    );
+  }
+
+  String _time(DateTime t) {
+    final h = t.hour.toString().padLeft(2, '0');
+    final m = t.minute.toString().padLeft(2, '0');
+    return "$h:$m";
+  }
+}
+
+class _WavePainter extends CustomPainter {
+  final double progress; // 0..1
+  final double amp; // 0.6..1.0
+  final Color color;
+  _WavePainter(
+      {required this.progress, required this.amp, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.9)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    final midY = size.height / 2;
+    final len = size.width;
+    const cycles = 2.0;
+    for (double x = 0; x <= len; x++) {
+      final t = x / len;
+      final y = sin((t + progress) * cycles * 2 * pi) * (midY * 0.6 * amp);
+      if (x == 0) {
+        path.moveTo(x, midY + y);
+      } else {
+        path.lineTo(x, midY + y);
+      }
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _WavePainter old) =>
+      old.progress != progress || old.amp != amp || old.color != color;
+}
+
+// ————————————————————————————————————————————————
+// Composer
+// ————————————————————————————————————————————————
+
+class _Composer extends StatefulWidget {
+  const _Composer({
+    required this.controller,
+    required this.focusNode,
+    required this.onAttach,
+    required this.onSend,
+    required this.onStartRecord,
+    required this.onStopRecord,
+    required this.onDragUpdate,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onAttach;
+  final VoidCallback onSend;
+  final VoidCallback onStartRecord;
+  final VoidCallback onStopRecord;
+  final void Function(Offset delta) onDragUpdate;
+
+  @override
+  State<_Composer> createState() => _ComposerState();
+}
+
+class _ComposerState extends State<_Composer> {
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_watchText);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_watchText);
+    super.dispose();
+  }
+
+  void _watchText() {
+    final v = widget.controller.text.trim().isNotEmpty;
+    if (v != _hasText) setState(() => _hasText = v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            _RoundedIcon(
+              icon: Icons.add,
+              onTap: widget.onAttach,
+              tooltip: "Attach",
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                      color: cs.outlineVariant.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: TextField(
+                        controller: widget.controller,
+                        focusNode: widget.focusNode,
+                        minLines: 1,
+                        maxLines: 5,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: const InputDecoration(
+                          isCollapsed: true,
+                          hintText: "Message",
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.emoji_emotions_outlined),
+                      onPressed: () {},
+                      tooltip: "Emoji",
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutBack,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, anim) =>
+                  ScaleTransition(scale: anim, child: child),
+              child: _hasText
+                  ? _RoundedIcon(
+                      key: const ValueKey('send'),
+                      icon: Icons.send_rounded,
+                      onTap: widget.onSend,
+                      tooltip: "Send",
+                      filled: true,
+                    )
+                  : _HoldToRecordButton(
+                      key: const ValueKey('mic'),
+                      onStart: widget.onStartRecord,
+                      onStop: widget.onStopRecord,
+                      onDragUpdate: widget.onDragUpdate,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RoundedIcon extends StatelessWidget {
+  const _RoundedIcon({
+    super.key,
+    required this.icon,
+    this.onTap,
+    this.tooltip,
+    this.filled = false,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+  final String? tooltip;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final bg = filled ? cs.primary : cs.surfaceContainerHighest;
+    final fg = filled ? Colors.white : cs.onSurface;
+
+    final btn = InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(24),
+          border: filled
+              ? null
+              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+          boxShadow: filled
+              ? [
+                  BoxShadow(
+                    color: cs.primary.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  )
+                ]
+              : null,
+        ),
+        child: Icon(icon, color: fg),
+      ),
+    );
+
+    return tooltip == null ? btn : Tooltip(message: tooltip!, child: btn);
+  }
+}
+
+// Mic hold button with drag tracking
+class _HoldToRecordButton extends StatefulWidget {
+  const _HoldToRecordButton({
+    super.key,
+    required this.onStart,
+    required this.onStop,
+    required this.onDragUpdate,
+  });
+
+  final VoidCallback onStart;
+  final VoidCallback onStop;
+  final void Function(Offset delta) onDragUpdate;
+
+  @override
+  State<_HoldToRecordButton> createState() => _HoldToRecordButtonState();
+}
+
+class _HoldToRecordButtonState extends State<_HoldToRecordButton> {
+  Offset _lastLocal = Offset.zero;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onLongPressStart: (_) => widget.onStart(),
+      onLongPressMoveUpdate: (d) {
+        if (_lastLocal == Offset.zero) _lastLocal = d.localOffsetFromOrigin;
+        final delta = d.localOffsetFromOrigin - _lastLocal;
+        _lastLocal = d.localOffsetFromOrigin;
+        widget.onDragUpdate(delta);
+      },
+      onLongPressEnd: (_) {
+        _lastLocal = Offset.zero;
+        widget.onStop();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cs.primary,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: cs.primary.withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.mic, color: Colors.white),
+      ),
+    );
+  }
+}
+
+// Recording overlay
+class _RecordingOverlay extends StatelessWidget {
+  const _RecordingOverlay({
+    required this.pulse,
+    required this.dragOffset,
+    required this.cancelled,
+    required this.cancelThreshold,
+  });
+
+  final Animation<double> pulse;
+  final Offset dragOffset;
+  final bool cancelled;
+  final double cancelThreshold;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.35),
+          child: Center(
+            child: Transform.translate(
+              offset: Offset(dragOffset.dx * 0.5, 0),
+              child: AnimatedScale(
+                scale: pulse.value,
+                duration: const Duration(milliseconds: 150),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: cancelled ? Colors.red : cs.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 20,
+                      )
+                    ],
+                    border: Border.all(
+                      color: cancelled
+                          ? Colors.redAccent
+                          : cs.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        cancelled ? Icons.delete_forever : Icons.mic,
+                        color: cancelled ? Colors.white : cs.primary,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        cancelled
+                            ? "Release to cancel"
+                            : "Recording… slide left to cancel",
+                        style: TextStyle(
+                          color: cancelled ? Colors.white : cs.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: cancelled
+                              ? Colors.white.withValues(alpha: 0.15)
+                              : cs.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          "${(dragOffset.dx.abs() / cancelThreshold * 100).clamp(0, 100).toStringAsFixed(0)}%",
+                          style: TextStyle(
+                            color: cancelled ? Colors.white : cs.primary,
+                            fontSize: 12,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Typing indicator (3 animated dots)
+class _TypingIndicator extends StatelessWidget {
+  const _TypingIndicator();
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 8, top: 2),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            return _Dot(delay: i * 150, color: cs.onSurfaceVariant);
+          }),
+        ),
+      ),
+    );
+  }
+}
+
+class _Dot extends StatefulWidget {
+  const _Dot({required this.delay, required this.color});
+  final int delay;
+  final Color color;
+
+  @override
+  State<_Dot> createState() => _DotState();
+}
+
+class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
+  late AnimationController _c;
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+      lowerBound: 0.4,
+      upperBound: 1.0,
+    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) _c.repeat(reverse: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _c,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 3),
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+          color: widget.color,
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
+
+// Attach sheet grid item
+class _AttachItem extends StatelessWidget {
+  const _AttachItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: cs.primary),
+            ),
+            const SizedBox(height: 8),
+            Text(label, style: TextStyle(color: cs.onSurface)),
+          ],
+        ),
+      ),
+    );
+  }
+}

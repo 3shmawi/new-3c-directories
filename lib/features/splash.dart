@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:new_3c/features/auth/auth.dart';
-import 'package:new_3c/features/home/home_pag.dart';
+
+import 'chat/chat.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -13,7 +14,7 @@ class SplashScreen extends StatelessWidget {
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return const HomePag();
+              return const ChatScreen();
             }
             if (!snapshot.hasData) {
               return const AuthPage();
