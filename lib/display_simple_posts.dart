@@ -110,8 +110,10 @@ class _DisplayState extends State<Display> {
                               showModalBottomSheet(
                                   context: context,
                                   builder: (context) {
-                                    return createOrUpdatePost(context,
-                                        postId: post['id']);
+                                    return createOrUpdatePost(
+                                      context,
+                                      postId: post['id'],
+                                    );
                                   });
                               setState(() {});
                             },
