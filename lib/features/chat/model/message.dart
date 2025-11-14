@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class Message {
   final String id;
   final String text;
@@ -22,7 +25,7 @@ class Message {
       id: json['id'],
       text: json['text'],
       senderId: json['sender_id'],
-      time: json['time'],
+      time: (json['time'] as Timestamp).toDate(),
       seen: json['seen'],
       profileAvatar: json['profile_avatar'],
       displayName: json['display_name'],
@@ -40,4 +43,8 @@ class Message {
       'display_name': displayName,
     };
   }
+
+  final _auth = FirebaseAuth.instance;
+
+  bool get isMe => senderId == _auth.currentUser?.uid;
 }

@@ -1,56 +1,31 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/features/auth/auth.dart';
 
+import 'controller/message_ctrl.dart';
 import 'model/message.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
+
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  final List<Message> _messages = [
-    Message(
-      id: 'm1',
-      text: "Hey! 👋 Ready for later?",
-      senderId: "false",
-      time: DateTime.now().subtract(const Duration(minutes: 12)),
-    ),
-    Message(
-      id: 'm2',
-      text: "Yesss! Share the location?",
-      senderId: "false",
-      time: DateTime.now().subtract(const Duration(minutes: 11)),
-      seen: true,
-    ),
-    Message(
-      id: 'm3',
-      text: "",
-      senderId: "false",
-      time: DateTime.now().subtract(const Duration(minutes: 9)),
-    ),
-    Message(
-      id: 'm4',
-      text: "Here you go 📍",
-      senderId: "false",
-      time: DateTime.now().subtract(const Duration(minutes: 9)),
-    ),
-  ];
-
   final _listController = ScrollController();
   final _textController = TextEditingController();
   final _focusNode = FocusNode();
 
   bool _showScrollToBottom = false;
-  bool _isTyping = false; // other user typing indicator
   bool _recording = false;
   bool _recordingCancelled = false;
   late AnimationController _recordPulse;
   late AnimationController _typingDots;
-  Timer? _typingMockTimer;
 
   // For “slide to cancel”
   Offset _dragOffset = Offset.zero;
@@ -77,31 +52,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (_showScrollToBottom == nearBottom) return;
       setState(() => _showScrollToBottom = !nearBottom);
     });
-
-    // Fake “other user typing” every 20 seconds (demo)
-    _typingMockTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      setState(() => _isTyping = true);
-      Future.delayed(const Duration(seconds: 3), () {
-        if (!mounted) return;
-        setState(() {
-          _isTyping = false;
-          _messages.insert(
-            0,
-            Message(
-              id: UniqueKey().toString(),
-              text: "Typing… actually I’m on my way 🚗",
-              senderId: "false",
-              time: DateTime.now(),
-            ),
-          );
-        });
-      });
-    });
   }
 
   @override
   void dispose() {
-    _typingMockTimer?.cancel();
     _listController.dispose();
     _textController.dispose();
     _focusNode.dispose();
@@ -113,19 +67,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _sendText() {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
-    setState(() {
-      _messages.insert(
-        0,
-        Message(
-          id: UniqueKey().toString(),
-          text: text,
-          senderId: "false",
-          time: DateTime.now(),
-          seen: false,
-        ),
-      );
-      _textController.clear();
-    });
+    context.read<MessageCtrl>().sendMessage(text);
+    _textController.clear();
     _scrollToBottomSmooth();
   }
 
@@ -162,7 +105,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 label: "Gallery",
                 onTap: () {
                   Navigator.pop(context);
-                  _addMockImage();
                 },
               ),
               _AttachItem(
@@ -170,7 +112,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 label: "Camera",
                 onTap: () {
                   Navigator.pop(context);
-                  _addMockImage();
                 },
               ),
               _AttachItem(
@@ -194,22 +135,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  void _addMockImage() {
-    setState(() {
-      _messages.insert(
-        0,
-        Message(
-          id: UniqueKey().toString(),
-          text: "",
-          senderId: "false",
-          time: DateTime.now(),
-          seen: false,
-        ),
-      );
-    });
-    _scrollToBottomSmooth();
   }
 
   void _showSnack(String msg) {
@@ -249,91 +174,128 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       _showSnack("Recording cancelled");
       return;
     }
-    // Add a mock audio bubble to the list
-    setState(() {
-      _messages.insert(
-        0,
-        Message(
-          id: UniqueKey().toString(),
-          text: "",
-          senderId: "false",
-          time: DateTime.now(),
-          seen: false,
-        ),
-      );
-    });
+
     _scrollToBottomSmooth();
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: cs.surface,
-      appBar: _buildAppBar(cs),
-      body: Stack(
-        children: [
-          Column(
+    return BlocConsumer<MessageCtrl, MessageStates>(
+      listener: (context, state) {
+        // TODO: implement listener
+      },
+      builder: (context, state) {
+        final ctrl = context.read<MessageCtrl>();
+        return Scaffold(
+          backgroundColor: cs.surface,
+          appBar: _buildAppBar(cs),
+          body: Stack(
             children: [
-              Expanded(
-                child: NotificationListener<UserScrollNotification>(
-                  onNotification: (_) => false,
-                  child: ListView.builder(
-                    controller: _listController,
-                    reverse: true,
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                    itemCount: _messages.length + (_isTyping ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (_isTyping && index == 0) {
-                        return const _TypingIndicator();
-                      }
-                      final msg = _messages[_isTyping ? index - 1 : index];
-                      final next = (_isTyping ? index - 2 : index - 1) >= 0
-                          ? _messages[_isTyping ? index - 2 : index - 1]
-                          : null;
-                      final showAvatar = !(true) &&
-                          (next == null || true || _minGap(next, msg));
-                      return _MessageRow(
-                        message: msg,
-                        showAvatar: showAvatar,
-                      );
-                    },
+              Column(
+                children: [
+                  Expanded(
+                    child: NotificationListener<UserScrollNotification>(
+                      onNotification: (_) => false,
+                      child: StreamBuilder<List<Message>>(
+                          stream: ctrl.getMessages(),
+                          builder: (context, snapshot) {
+                            //first state, connection state
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+
+                            //second error state
+                            if (snapshot.hasError) {
+                              return Center(
+                                child:
+                                    Text("Error: ${snapshot.error.toString()}"),
+                              );
+                            }
+
+                            //success but empty
+                            final messages = snapshot.data;
+                            if (messages == null || messages.isEmpty) {
+                              return const Center(
+                                  child: Text("No messaged yet"));
+                            }
+
+                            //success and data
+                            return StreamBuilder<bool>(
+                                stream: ctrl.isTypingStream(),
+                                builder: (context, snapshot) {
+                                  final isTyping = snapshot.data ?? false;
+                                  return ListView.builder(
+                                    controller: _listController,
+                                    reverse: true,
+                                    padding: const EdgeInsets.fromLTRB(
+                                        12, 8, 12, 12),
+                                    itemCount:
+                                        messages.length + (isTyping ? 1 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (isTyping && index == 0) {
+                                        return const _TypingIndicator();
+                                      }
+                                      final msg = messages[
+                                          isTyping ? index - 1 : index];
+                                      final next = (isTyping
+                                                  ? index - 2
+                                                  : index - 1) >=
+                                              0
+                                          ? messages[
+                                              isTyping ? index - 2 : index - 1]
+                                          : null;
+                                      final showAvatar = !(true) &&
+                                          (next == null ||
+                                              true ||
+                                              _minGap(next, msg));
+                                      return _MessageRow(
+                                        message: msg,
+                                        showAvatar: showAvatar,
+                                      );
+                                    },
+                                  );
+                                });
+                          }),
+                    ),
+                  ),
+                  _Composer(
+                    controller: _textController,
+                    focusNode: _focusNode,
+                    onAttach: _openAttachSheet,
+                    onSend: _sendText,
+                    onStartRecord: _startRecording,
+                    onStopRecord: _stopRecording,
+                    onDragUpdate: _updateDrag,
+                  ),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom),
+                ],
+              ),
+              // Recording overlay
+              if (_recording)
+                _RecordingOverlay(
+                  pulse: _recordPulse,
+                  dragOffset: _dragOffset,
+                  cancelled: _recordingCancelled,
+                  cancelThreshold: _cancelThreshold,
+                ),
+              // Scroll-to-bottom FAB
+              if (_showScrollToBottom)
+                Positioned(
+                  right: 16,
+                  bottom: 96,
+                  child: FloatingActionButton.small(
+                    heroTag: 'scroll_bottom',
+                    onPressed: _scrollToBottomSmooth,
+                    child: const Icon(Icons.keyboard_arrow_down),
                   ),
                 ),
-              ),
-              _Composer(
-                controller: _textController,
-                focusNode: _focusNode,
-                onAttach: _openAttachSheet,
-                onSend: _sendText,
-                onStartRecord: _startRecording,
-                onStopRecord: _stopRecording,
-                onDragUpdate: _updateDrag,
-              ),
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
             ],
           ),
-          // Recording overlay
-          if (_recording)
-            _RecordingOverlay(
-              pulse: _recordPulse,
-              dragOffset: _dragOffset,
-              cancelled: _recordingCancelled,
-              cancelThreshold: _cancelThreshold,
-            ),
-          // Scroll-to-bottom FAB
-          if (_showScrollToBottom)
-            Positioned(
-              right: 16,
-              bottom: 96,
-              child: FloatingActionButton.small(
-                heroTag: 'scroll_bottom',
-                onPressed: _scrollToBottomSmooth,
-                child: const Icon(Icons.keyboard_arrow_down),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -377,20 +339,21 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Alex Carter",
+                Text("World Chat",
                     style: TextStyle(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: cs.onSurface,
                     )),
                 Row(
                   children: [
-                    Icon(Icons.lock, size: 14, color: cs.outline),
+                    Icon(Icons.lock, size: 12, color: Colors.grey[400]),
                     const SizedBox(width: 4),
                     Text(
                       "End-to-end encrypted",
                       style: TextStyle(
-                        fontSize: 12,
-                        color: cs.outline,
+                        fontSize: 10,
+                        color: Colors.grey[400],
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -404,6 +367,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         IconButton(
           icon: const Icon(Icons.videocam_outlined),
           onPressed: () => _showSnack("Video call UI"),
+        ),
+        IconButton(
+          icon: const Icon(Icons.login),
+          onPressed: () {
+            FirebaseAuth.instance.signOut();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => AuthPage()),
+              (_) => false,
+            );
+          },
         ),
         IconButton(
           icon: const Icon(Icons.call_outlined),
@@ -438,7 +411,8 @@ class _MessageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMe = true;
+    final auth = FirebaseAuth.instance;
+    final isMe = auth.currentUser?.uid == message.senderId;
     return Padding(
       padding: EdgeInsets.only(
         top: 6,
@@ -455,9 +429,9 @@ class _MessageRow extends StatelessWidget {
             AnimatedOpacity(
               opacity: showAvatar ? 1 : 0,
               duration: const Duration(milliseconds: 200),
-              child: CircleAvatar(
+              child: const CircleAvatar(
                 radius: 14,
-                backgroundImage: const NetworkImage(
+                backgroundImage: NetworkImage(
                   "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400",
                 ),
                 foregroundColor: Colors.transparent,
@@ -489,15 +463,16 @@ class _MessageRow extends StatelessWidget {
 
 class _Bubble extends StatelessWidget {
   const _Bubble({required this.message});
+
   final Message message;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isMe = false;
+    final isMe = message.isMe;
 
     final bg = isMe
-        ? LinearGradient(
+        ? const LinearGradient(
             colors: [const Color(0xFF4C7CF5), const Color(0xFF6AA4FF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -580,6 +555,7 @@ class _AudioBubble extends StatefulWidget {
     required this.time,
     required this.length,
   });
+
   final bool isMe;
   final DateTime time;
   final Duration length;
@@ -707,6 +683,7 @@ class _WavePainter extends CustomPainter {
   final double progress; // 0..1
   final double amp; // 0.6..1.0
   final Color color;
+
   _WavePainter(
       {required this.progress, required this.amp, required this.color});
 
@@ -777,12 +754,15 @@ class _ComposerState extends State<_Composer> {
   @override
   void dispose() {
     widget.controller.removeListener(_watchText);
+    context.read<MessageCtrl>().changeTypingValue(false);
+
     super.dispose();
   }
 
   void _watchText() {
     final v = widget.controller.text.trim().isNotEmpty;
     if (v != _hasText) setState(() => _hasText = v);
+    context.read<MessageCtrl>().changeTypingValue(true);
   }
 
   @override
@@ -1075,6 +1055,7 @@ class _RecordingOverlay extends StatelessWidget {
 // Typing indicator (3 animated dots)
 class _TypingIndicator extends StatelessWidget {
   const _TypingIndicator();
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -1082,11 +1063,6 @@ class _TypingIndicator extends StatelessWidget {
       padding: const EdgeInsets.only(left: 16, bottom: 8, top: 2),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: List.generate(3, (i) {
@@ -1100,6 +1076,7 @@ class _TypingIndicator extends StatelessWidget {
 
 class _Dot extends StatefulWidget {
   const _Dot({required this.delay, required this.color});
+
   final int delay;
   final Color color;
 
@@ -1109,6 +1086,7 @@ class _Dot extends StatefulWidget {
 
 class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
   late AnimationController _c;
+
   @override
   void initState() {
     super.initState();

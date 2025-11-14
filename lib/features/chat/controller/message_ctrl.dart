@@ -27,7 +27,7 @@ class MessageCtrl extends Cubit<MessageStates> {
       id: newId,
       text: message,
       senderId: auth.currentUser!.uid,
-      time: DateTime.now(),
+      time: DateTime.now().toUtc(),
     );
 
     try {
@@ -37,6 +37,7 @@ class MessageCtrl extends Cubit<MessageStates> {
           .collection("messages")
           .doc(newId)
           .set(newMessage.toJson());
+      changeTypingValue(false);
 
       emit(MessageSuccessState());
     } catch (error) {
@@ -58,6 +59,29 @@ class MessageCtrl extends Cubit<MessageStates> {
       }).toList();
     });
   }
+
+  void changeTypingValue(bool isTyping) {
+    fireStore
+        .collection("k_k_h")
+        .doc("#")
+        .collection("public_chat")
+        .doc("#")
+        .set({
+      "is_typing": isTyping,
+    }, SetOptions(merge: true));
+  }
+
+  Stream<bool> isTypingStream() {
+    return fireStore
+        .collection("k_k_h")
+        .doc("#")
+        .collection("public_chat")
+        .doc("#")
+        .snapshots()
+        .map((doc) {
+      return doc.data()?['is_typing'] ?? false;
+    });
+  }
 }
 
 abstract class MessageStates {}
@@ -73,3 +97,7 @@ class MessageErrorState extends MessageStates {
 
   MessageErrorState(this.error);
 }
+
+//implementation
+//provider
+//builder
