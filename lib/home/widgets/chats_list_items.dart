@@ -13,10 +13,11 @@ class ChatsListItems extends StatelessWidget {
       ),
       itemCount: 10,
       itemBuilder: (context, index) => HomeItem(
-        name: "N a m e $index",
+        name: " اسم $index",
         img: "https://picsum.photos/20$index",
         message: "M e s s a g e f r o m N a m e$index",
         time: "0${index + 1}:00 AM",
+        key: UniqueKey(),
       ),
     );
   }

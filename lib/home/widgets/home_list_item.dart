@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:new_3c/chat_details/home_chat_details.dart';
+import 'package:new_3c/show_avatar_preview/avatar_preview_dialog.dart';
 
 import 'avatar.dart';
 
@@ -31,9 +32,20 @@ class HomeItem extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            Avatar(
-              img,
-              size: Size.square(60),
+            GestureDetector(
+              onTap: () => showAvatarPreviewDialog(
+                context,
+                avatarUrl: img,
+                name: name,
+                key: key,
+              ),
+              child: Hero(
+                tag: key ?? UniqueKey(),
+                child: Avatar(
+                  img,
+                  size: Size.square(60),
+                ),
+              ),
             ),
             SizedBox(width: 12),
             Expanded(
