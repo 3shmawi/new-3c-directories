@@ -316,7 +316,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               const CircleAvatar(
                 radius: 20,
                 backgroundImage: NetworkImage(
-                  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400",
+                  "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2hhdHxlbnwwfHwwfHx8MA%3D%3D",
                 ),
               ),
               Positioned(
