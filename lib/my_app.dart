@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:new_3c/screens/display_user_profile.dart';
+
+import 'intro/screens/display_user_profile.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

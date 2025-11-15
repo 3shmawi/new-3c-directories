@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../helpers/web_network_images.dart';
+import '../../helpers/web_network_images.dart';
 
 class DisplayDogImage extends StatefulWidget {
   const DisplayDogImage({super.key});

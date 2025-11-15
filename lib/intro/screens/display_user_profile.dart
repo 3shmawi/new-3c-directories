@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../helpers/web_network_images.dart';
+import '../../helpers/web_network_images.dart';
 
 class DisplayUserProfile extends StatefulWidget {
   const DisplayUserProfile({super.key});
