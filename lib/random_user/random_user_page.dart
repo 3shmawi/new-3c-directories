@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:new_3c/model/user_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/random_user/random_user_controller.dart';
 
 import '../core/network_image.dart';
-import '../services/dio_service.dart';
 
-class RandomUserPage extends StatefulWidget {
+class RandomUserPage extends StatelessWidget {
   const RandomUserPage({super.key});
 
-  @override
-  State<RandomUserPage> createState() => _RandomUserPageState();
-}
-
-class _RandomUserPageState extends State<RandomUserPage> {
   //here we will implement calling api random user > https://randomuser.me/api/
   @override
   Widget build(BuildContext context) {
@@ -21,27 +16,26 @@ class _RandomUserPageState extends State<RandomUserPage> {
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: () {
-              setState(() {});
+              context.read<RandomUserController>().fetchRandomUser();
             },
           )
         ],
       ),
       body: Center(
-        child: FutureBuilder<UserModel?>(
-          future: fetchRandomUserData(),
-          builder: (context, snapshot) {
+        child: BlocBuilder<RandomUserController, RandomUserStates>(
+          builder: (context, state) {
             //1) waiting state or loading
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (state is RandomUserLoadingState) {
               return CircularProgressIndicator();
             }
 
             //2) error state
-            if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
+            if (state is RandomUserErrorState) {
+              return Text('Error: ${state.errorMessage}');
             }
 
             //3) success and empty
-            final data = snapshot.data;
+            final data = context.read<RandomUserController>().userModel;
             if (data == null) {
               return Text('No user data found.');
             }
@@ -83,13 +77,4 @@ class _RandomUserPageState extends State<RandomUserPage> {
       ),
     );
   }
-}
-
-Future<UserModel?> fetchRandomUserData() async {
-  final response = await HttpUtil().get<Map<String, dynamic>>('');
-  final data = response?["results"]?[0];
-  if (data != null) {
-    return UserModel.fromJson(data);
-  }
-  return null;
 }
