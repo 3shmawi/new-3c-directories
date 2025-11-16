@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }),
       ),
-      floatingActionButton: Row(
+      bottomNavigationBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           FloatingActionButton(
