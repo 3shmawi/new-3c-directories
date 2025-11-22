@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 final isLocalized = ValueNotifier(false);
 
-class AppBarItem extends StatelessWidget implements PreferredSizeWidget {
-  const AppBarItem({super.key});
+class HomeAppBarItem extends StatelessWidget implements PreferredSizeWidget {
+  const HomeAppBarItem({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -2,12 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class BottomNavItem extends StatelessWidget {
-  const BottomNavItem({super.key});
+  const BottomNavItem({required this.index, required this.onTap, super.key});
+  final int index;
+  final void Function(int) onTap;
 
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
+      currentIndex: index,
+      onTap: onTap,
       items: [
         BottomNavigationBarItem(
           icon: Icon(CupertinoIcons.home),
@@ -22,12 +26,8 @@ class BottomNavItem extends StatelessWidget {
           label: "Stories",
         ),
         BottomNavigationBarItem(
-          icon: Icon(CupertinoIcons.profile_circled),
+          icon: Icon(CupertinoIcons.person),
           label: "Profile",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(CupertinoIcons.settings),
-          label: "Settings",
         ),
       ],
     );

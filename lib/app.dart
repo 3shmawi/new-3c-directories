@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '/home/home_screen.dart';
+import 'package:new_3c/layout/layout_view.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -9,7 +8,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: LayoutView(),
     );
   }
 }
