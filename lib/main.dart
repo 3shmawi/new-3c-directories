@@ -1,13 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:new_3c/firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'firebase_options.dart';
+import 'services/auth_service.dart';
+import 'services/chat_service.dart';
+import 'services/storage_service.dart';
+import 'services/story_service.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -16,83 +25,48 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: HomeScreen(),
+    return MultiProvider(
+      providers: [
+        Provider<AuthService>(create: (_) => AuthService()),
+        Provider<ChatService>(create: (_) => ChatService()),
+        Provider<StorageService>(create: (_) => StorageService()),
+        Provider<StoryService>(create: (_) => StoryService()),
+      ],
+      child: MaterialApp(
+        title: '3C Chat App',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const AuthWrapper(),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: FutureBuilder<Object>(
-            future: FirebaseFirestore.instance
-                .collection("Omar/#/counter")
-                .doc("count2")
-                .get(),
-            builder: (context, snapshot) {
-              // waiting state
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              }
+    final authService = Provider.of<AuthService>(context);
 
-              // error state
-              if (snapshot.hasError) {
-                return Text("Error: ${snapshot.error}");
-              }
+    return StreamBuilder(
+      stream: authService.authStateChanges,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-              // success with no data
-              final doc = snapshot.data as DocumentSnapshot?;
-              final data = doc?.data() as Map<String, dynamic>?;
-              if (data == null) {
-                return Text("No data");
-              }
+        if (snapshot.hasData) {
+          return const HomeScreen();
+        }
 
-              // success with data
-              return Text(
-                "Count: ${data['value']}",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            }),
-      ),
-      bottomNavigationBar: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FloatingActionButton(
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection("Omar/#/counter")
-                  .doc("count2")
-                  .update({"value": FieldValue.increment(1)});
-              setState(() {});
-            },
-            child: Icon(Icons.add),
-          ),
-          FloatingActionButton(
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection("Omar/#/counter")
-                  .doc("count2")
-                  .update({"value": FieldValue.increment(-1)});
-              setState(() {});
-              //todo implement decrement
-            },
-            child: Icon(Icons.remove),
-          ),
-        ],
-      ),
+        return const LoginScreen();
+      },
     );
   }
 }
