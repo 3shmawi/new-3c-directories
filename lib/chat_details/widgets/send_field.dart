@@ -69,6 +69,9 @@ class _SendFieldWidgetState extends State<SendFieldWidget> {
             size: 20,
           ),
         ),
+        SizedBox(
+          width: 10,
+        ),
       ],
     );
   }

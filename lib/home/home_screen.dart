@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:new_3c/home/widgets/app_bar_item.dart';
-import 'package:new_3c/home/widgets/bottom_nav_item.dart';
-import 'package:new_3c/home/widgets/chats_list_items.dart';
-import 'package:new_3c/home/widgets/search_bar.dart';
-import 'package:new_3c/home/widgets/stories_list_items.dart';
+
+import '/home/widgets/app_bar_item.dart';
+import '/home/widgets/bottom_nav_item.dart';
+import '/home/widgets/chats_list_items.dart';
+import '/home/widgets/search_bar.dart';
+import '/home/widgets/stories_list_items.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
