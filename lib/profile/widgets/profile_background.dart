@@ -14,11 +14,15 @@ class ProfileBackground extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFF6A25C), Color(0xFFD66B4B)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Color(0xFFF6A25C),
+                    Color(0xFFD66B4B),
+                    Colors.black.withValues(alpha: .7)
+                  ],
                 ),
               ),
             ),
@@ -27,7 +31,8 @@ class ProfileBackground extends StatelessWidget {
             Align(
               alignment: Alignment.bottomCenter,
               child: ClipPath(
-                clipper: TopArcClipper(arcHeight: 60), // tweak height to taste
+                clipper: TopArcClipper(
+                    arcHeight: size.width * .1), // tweak height to taste
                 child: Container(
                   height: size.height * .8,
                   color: Colors.white,
