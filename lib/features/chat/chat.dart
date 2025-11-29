@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/features/auth/auth.dart';
@@ -34,6 +34,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    context.read<MessageCtrl>().fetchProfileData();
 
     _recordPulse = AnimationController(
       vsync: this,
@@ -181,121 +182,122 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return BlocConsumer<MessageCtrl, MessageStates>(
-      listener: (context, state) {
-        // TODO: implement listener
-      },
-      builder: (context, state) {
-        final ctrl = context.read<MessageCtrl>();
-        return Scaffold(
-          backgroundColor: cs.surface,
-          appBar: _buildAppBar(cs),
-          body: Stack(
-            children: [
-              Column(
+    return BlocProvider(
+      create: (context) => MessageCtrl()..fetchProfileData(),
+      child: Builder(builder: (context) {
+        return BlocConsumer<MessageCtrl, MessageStates>(
+          listener: (context, state) {
+            if (state is MessageErrorState) {
+              _showSnack(state.error);
+            }
+          },
+          builder: (context, state) {
+            final ctrl = context.read<MessageCtrl>();
+            return Scaffold(
+              backgroundColor: cs.surface,
+              appBar: _buildAppBar(cs),
+              body: Stack(
                 children: [
-                  Expanded(
-                    child: NotificationListener<UserScrollNotification>(
-                      onNotification: (_) => false,
-                      child: StreamBuilder<List<Message>>(
-                          stream: ctrl.getMessages(),
-                          builder: (context, snapshot) {
-                            //first state, connection state
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
+                  Column(
+                    children: [
+                      Expanded(
+                        child: NotificationListener<UserScrollNotification>(
+                          onNotification: (_) => false,
+                          child: StreamBuilder<List<Message>>(
+                              stream: ctrl.getMessages(),
+                              builder: (context, snapshot) {
+                                //first state, connection state
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
 
-                            //second error state
-                            if (snapshot.hasError) {
-                              return Center(
-                                child:
-                                    Text("Error: ${snapshot.error.toString()}"),
-                              );
-                            }
-
-                            //success but empty
-                            final messages = snapshot.data;
-                            if (messages == null || messages.isEmpty) {
-                              return const Center(
-                                  child: Text("No messaged yet"));
-                            }
-
-                            //success and data
-                            return StreamBuilder<bool>(
-                                stream: ctrl.isTypingStream(),
-                                builder: (context, snapshot) {
-                                  final isTyping = snapshot.data ?? false;
-                                  return ListView.builder(
-                                    controller: _listController,
-                                    reverse: true,
-                                    padding: const EdgeInsets.fromLTRB(
-                                        12, 8, 12, 12),
-                                    itemCount:
-                                        messages.length + (isTyping ? 1 : 0),
-                                    itemBuilder: (context, index) {
-                                      if (isTyping && index == 0) {
-                                        return const _TypingIndicator();
-                                      }
-                                      final msg = messages[
-                                          isTyping ? index - 1 : index];
-                                      final next = (isTyping
-                                                  ? index - 2
-                                                  : index - 1) >=
-                                              0
-                                          ? messages[
-                                              isTyping ? index - 2 : index - 1]
-                                          : null;
-                                      final showAvatar = !(true) &&
-                                          (next == null ||
-                                              true ||
-                                              _minGap(next, msg));
-                                      return _MessageRow(
-                                        message: msg,
-                                        showAvatar: showAvatar,
-                                      );
-                                    },
+                                //second error state
+                                if (snapshot.hasError) {
+                                  return Center(
+                                    child: Text(
+                                        "Error: ${snapshot.error.toString()}"),
                                   );
-                                });
-                          }),
+                                }
+
+                                //success but empty
+                                final messages = snapshot.data;
+                                if (messages == null || messages.isEmpty) {
+                                  return const Center(
+                                      child: Text("No messaged yet"));
+                                }
+
+                                //success and data
+                                return StreamBuilder<bool>(
+                                    stream: ctrl.isTypingStream(),
+                                    builder: (context, snapshot) {
+                                      final isTyping = snapshot.data ?? false;
+                                      return ListView.builder(
+                                        controller: _listController,
+                                        reverse: true,
+                                        padding: const EdgeInsets.fromLTRB(
+                                            12, 8, 12, 12),
+                                        itemCount: messages.length +
+                                            (isTyping ? 1 : 0),
+                                        itemBuilder: (context, index) {
+                                          if (isTyping && index == 0) {
+                                            return const _TypingIndicator();
+                                          }
+                                          final msg = messages[
+                                              isTyping ? index - 1 : index];
+                                          final next = (isTyping
+                                                      ? index - 2
+                                                      : index - 1) >=
+                                                  0
+                                              ? messages[isTyping
+                                                  ? index - 2
+                                                  : index - 1]
+                                              : null;
+                                          final showAvatar =
+                                              !(msg.profileAvatar == null) &&
+                                                  (next == null ||
+                                                      _minGap(next, msg));
+                                          return _MessageRow(
+                                            message: msg,
+                                            showAvatar: showAvatar,
+                                          );
+                                        },
+                                      );
+                                    });
+                              }),
+                        ),
+                      ),
+                      _Composer(
+                        controller: _textController,
+                        focusNode: _focusNode,
+                        onAttach: _openAttachSheet,
+                        onSend: _sendText,
+                        onStartRecord: _startRecording,
+                        onStopRecord: _stopRecording,
+                        onDragUpdate: _updateDrag,
+                      ),
+                      SizedBox(height: MediaQuery.of(context).padding.bottom),
+                    ],
+                  ),
+                  // Recording overlay
+
+                  if (_showScrollToBottom)
+                    Positioned(
+                      right: 16,
+                      bottom: 96,
+                      child: FloatingActionButton.small(
+                        heroTag: 'scroll_bottom',
+                        onPressed: _scrollToBottomSmooth,
+                        child: const Icon(Icons.keyboard_arrow_down),
+                      ),
                     ),
-                  ),
-                  _Composer(
-                    controller: _textController,
-                    focusNode: _focusNode,
-                    onAttach: _openAttachSheet,
-                    onSend: _sendText,
-                    onStartRecord: _startRecording,
-                    onStopRecord: _stopRecording,
-                    onDragUpdate: _updateDrag,
-                  ),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom),
                 ],
               ),
-              // Recording overlay
-              if (_recording)
-                _RecordingOverlay(
-                  pulse: _recordPulse,
-                  dragOffset: _dragOffset,
-                  cancelled: _recordingCancelled,
-                  cancelThreshold: _cancelThreshold,
-                ),
-              // Scroll-to-bottom FAB
-              if (_showScrollToBottom)
-                Positioned(
-                  right: 16,
-                  bottom: 96,
-                  child: FloatingActionButton.small(
-                    heroTag: 'scroll_bottom',
-                    onPressed: _scrollToBottomSmooth,
-                    child: const Icon(Icons.keyboard_arrow_down),
-                  ),
-                ),
-            ],
-          ),
+            );
+          },
         );
-      },
+      }),
     );
   }
 
@@ -365,31 +367,24 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.videocam_outlined),
-          onPressed: () => _showSnack("Video call UI"),
-        ),
-        IconButton(
-          icon: const Icon(Icons.login),
           onPressed: () {
             FirebaseAuth.instance.signOut();
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => AuthPage()),
-              (_) => false,
-            );
+
+            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+              builder: (context) {
+                return const AuthPage();
+              },
+            ), (_) => false);
           },
+          icon: const Icon(
+            Icons.logout,
+          ),
         ),
         IconButton(
-          icon: const Icon(Icons.call_outlined),
-          onPressed: () => _showSnack("Voice call UI"),
-        ),
-        PopupMenuButton<String>(
-          onSelected: (v) => _showSnack(v),
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: "View profile", child: Text("View profile")),
-            PopupMenuItem(value: "Mute", child: Text("Mute notifications")),
-            PopupMenuItem(value: "Search", child: Text("Search in chat")),
-            PopupMenuItem(value: "Clear", child: Text("Clear chat")),
-          ],
+          onPressed: () {},
+          icon: const Icon(
+            CupertinoIcons.profile_circled,
+          ),
         ),
       ],
     );
@@ -548,173 +543,6 @@ class _Bubble extends StatelessWidget {
     return "$h:$m";
   }
 }
-
-class _AudioBubble extends StatefulWidget {
-  const _AudioBubble({
-    required this.isMe,
-    required this.time,
-    required this.length,
-  });
-
-  final bool isMe;
-  final DateTime time;
-  final Duration length;
-
-  @override
-  State<_AudioBubble> createState() => _AudioBubbleState();
-}
-
-class _AudioBubbleState extends State<_AudioBubble>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _wave;
-  bool _playing = false;
-  Duration _pos = Duration.zero;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _wave = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-      lowerBound: 0.6,
-      upperBound: 1.0,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _wave.dispose();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _toggle() {
-    if (_playing) {
-      _timer?.cancel();
-    } else {
-      _timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        setState(() {
-          _pos += const Duration(milliseconds: 200);
-          if (_pos >= widget.length) {
-            _pos = Duration.zero;
-            _playing = false;
-            _timer?.cancel();
-          }
-        });
-      });
-    }
-    setState(() => _playing = !_playing);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final on = widget.isMe ? Colors.white : cs.onSurface;
-    final subtle = widget.isMe ? Colors.white70 : cs.onSurfaceVariant;
-
-    String fmt(Duration d) =>
-        "${d.inMinutes.remainder(60).toString().padLeft(2, '0')}:${(d.inSeconds.remainder(60)).toString().padLeft(2, '0')}";
-
-    return Column(
-      crossAxisAlignment:
-          widget.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            InkWell(
-              onTap: _toggle,
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: widget.isMe
-                      ? Colors.white24
-                      : cs.surfaceTint.withValues(alpha: 0.06),
-                ),
-                child: Icon(
-                  _playing ? Icons.pause : Icons.play_arrow,
-                  color: on,
-                  size: 20,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 120,
-              height: 28,
-              child: AnimatedBuilder(
-                animation: _wave,
-                builder: (_, __) {
-                  return CustomPaint(
-                    painter: _WavePainter(
-                        progress: _pos.inMilliseconds /
-                            max(1, widget.length.inMilliseconds),
-                        amp: _wave.value,
-                        color: on),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(fmt(widget.length),
-                style: TextStyle(fontSize: 12, color: subtle)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          "${fmt(_pos)} • ${_time(widget.time)}",
-          style: TextStyle(fontSize: 10, color: subtle),
-        )
-      ],
-    );
-  }
-
-  String _time(DateTime t) {
-    final h = t.hour.toString().padLeft(2, '0');
-    final m = t.minute.toString().padLeft(2, '0');
-    return "$h:$m";
-  }
-}
-
-class _WavePainter extends CustomPainter {
-  final double progress; // 0..1
-  final double amp; // 0.6..1.0
-  final Color color;
-
-  _WavePainter(
-      {required this.progress, required this.amp, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color.withValues(alpha: 0.9)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    final midY = size.height / 2;
-    final len = size.width;
-    const cycles = 2.0;
-    for (double x = 0; x <= len; x++) {
-      final t = x / len;
-      final y = sin((t + progress) * cycles * 2 * pi) * (midY * 0.6 * amp);
-      if (x == 0) {
-        path.moveTo(x, midY + y);
-      } else {
-        path.lineTo(x, midY + y);
-      }
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _WavePainter old) =>
-      old.progress != progress || old.amp != amp || old.color != color;
-}
-
 // ————————————————————————————————————————————————
 // Composer
 // ————————————————————————————————————————————————
@@ -785,12 +613,6 @@ class _ComposerState extends State<_Composer> {
         ),
         child: Row(
           children: [
-            _RoundedIcon(
-              icon: Icons.add,
-              onTap: widget.onAttach,
-              tooltip: "Attach",
-            ),
-            const SizedBox(width: 8),
             Expanded(
               child: Container(
                 padding:
@@ -801,54 +623,33 @@ class _ComposerState extends State<_Composer> {
                   border: Border.all(
                       color: cs.outlineVariant.withValues(alpha: 0.5)),
                 ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: TextField(
-                        controller: widget.controller,
-                        focusNode: widget.focusNode,
-                        minLines: 1,
-                        maxLines: 5,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(
-                          isCollapsed: true,
-                          hintText: "Message",
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.emoji_emotions_outlined),
-                      onPressed: () {},
-                      tooltip: "Emoji",
-                    ),
-                  ],
+                child: TextField(
+                  controller: widget.controller,
+                  focusNode: widget.focusNode,
+                  minLines: 1,
+                  maxLines: 5,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    hintText: "Message",
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    border: InputBorder.none,
+                  ),
+                  onTapOutside: (_) {
+                    FocusScope.of(context).unfocus();
+                  },
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              switchInCurve: Curves.easeOutBack,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, anim) =>
-                  ScaleTransition(scale: anim, child: child),
-              child: _hasText
-                  ? _RoundedIcon(
-                      key: const ValueKey('send'),
-                      icon: Icons.send_rounded,
-                      onTap: widget.onSend,
-                      tooltip: "Send",
-                      filled: true,
-                    )
-                  : _HoldToRecordButton(
-                      key: const ValueKey('mic'),
-                      onStart: widget.onStartRecord,
-                      onStop: widget.onStopRecord,
-                      onDragUpdate: widget.onDragUpdate,
-                    ),
-            ),
+            _RoundedIcon(
+              key: const ValueKey('send'),
+              icon: Icons.send_rounded,
+              onTap: widget.onSend,
+              tooltip: "Send",
+              filled: true,
+            )
           ],
         ),
       ),

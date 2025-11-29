@@ -2,12 +2,30 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/features/chat/model/message.dart';
+import 'package:new_3c/model/user_model.dart';
 
 class MessageCtrl extends Cubit<MessageStates> {
   MessageCtrl() : super(MessageInitialState());
 
   final fireStore = FirebaseFirestore.instance;
   final auth = FirebaseAuth.instance;
+  UserModel? userModel;
+
+  void fetchProfileData() async {
+    final myId = auth.currentUser?.uid;
+    if (myId == null) {
+      emit(MessageErrorState("unauthenticated, please sign in first"));
+      return;
+    }
+    try {
+      final userDoc =
+          await fireStore.collection("k_k_h/#/users").doc(myId).get();
+      userModel = UserModel.fromJson(userDoc.data()!);
+      emit(MessageInitialState());
+    } catch (error) {
+      emit(MessageErrorState(error.toString()));
+    }
+  }
 
   ///send message
   void sendMessage(String message) async {
@@ -28,6 +46,8 @@ class MessageCtrl extends Cubit<MessageStates> {
       text: message,
       senderId: auth.currentUser!.uid,
       time: DateTime.now().toUtc(),
+      profileAvatar: userModel?.profilePictureUrl,
+      displayName: userModel?.name,
     );
 
     try {

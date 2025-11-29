@@ -19,12 +19,12 @@ class UserModel {
   //Named constructor for creating a UserModel from JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phoneNumber: json['phone_number'] as String,
-      email: json['email'] as String,
-      profilePictureUrl: json['profile_picture_url'] as String,
-      isActive: json['is_active'] as bool,
+      id: json['id'] as String?,
+      name: json['name'] as String?,
+      phoneNumber: json['phone_number'] as String?,
+      email: json['email'] as String?,
+      profilePictureUrl: json['profile_picture_url'] as String?,
+      isActive: json['is_active'] as bool?,
     );
   }
 

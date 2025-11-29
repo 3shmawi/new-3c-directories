@@ -73,13 +73,16 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     try {
       if (_isSignIn) {
         if (_signInKey.currentState!.validate()) {
-          await _auth.signInWithEmailAndPassword(
-              email: _emailCtrl.text, password: _passCtrl.text);
-          // TODO: call your sign-in logic
+          try {
+            await _auth.signInWithEmailAndPassword(
+                email: _emailCtrl.text, password: _passCtrl.text);
 
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            return const ChatScreen();
-          }));
+            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+              builder: (context) {
+                return const ChatScreen();
+              },
+            ), (_) => false);
+          } catch (error) {}
         }
       } else {
         if (_signUpKey.currentState!.validate()) {
@@ -109,10 +112,11 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
               .doc(newUser.id)
               .set(newUser.toJson());
 
-          /// todo navigate to home page after sign up
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Creating account...')),
-          );
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+            builder: (context) {
+              return const ChatScreen();
+            },
+          ), (_) => false);
         }
       }
     } catch (error) {
@@ -129,6 +133,8 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+
       // Gradient background
       body: Container(
         decoration: BoxDecoration(
@@ -149,152 +155,156 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // App title / branding
-                    Text(
-                      'Modern Chat',
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.2,
-                              ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _isSignIn
-                          ? 'Welcome back — let’s get you in'
-                          : 'Create your account to start chatting',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: cs.onSurface.withValues(alpha: 0.65),
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 22),
-
-                    // Glass card
-                    _GlassCard(
-                      child: ListView(
-                        children: [
-                          _ModeSwitch(
-                            isSignIn: _isSignIn,
-                            onChanged: (signIn) {
-                              setState(() => _isSignIn = signIn);
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Animated forms
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 280),
-                            switchInCurve: Curves.easeOut,
-                            switchOutCurve: Curves.easeIn,
-                            transitionBuilder: (child, anim) {
-                              // Subtle fade + vertical slide
-                              final offsetTween = Tween<Offset>(
-                                begin: const Offset(0, 0.06),
-                                end: Offset.zero,
-                              );
-                              return FadeTransition(
-                                opacity: anim,
-                                child: SlideTransition(
-                                  position: anim.drive(offsetTween),
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: _isSignIn
-                                ? _SignInForm(
-                                    key: const ValueKey('sign-in'),
-                                    emailCtrl: _emailCtrl,
-                                    passCtrl: _passCtrl,
-                                    obscurePass: _obscurePass,
-                                    onToggleObscure: () => setState(
-                                        () => _obscurePass = !_obscurePass),
-                                    emailValidator: _emailValidator,
-                                    passwordValidator: _passwordValidator,
-                                    onSubmit: _submit,
-                                  )
-                                : _SignUpForm(
-                                    key: const ValueKey('sign-up'),
-                                    nameCtrl: _nameCtrl,
-                                    emailCtrl: _emailCtrl,
-                                    phoneCtrl: _phoneNumber,
-                                    passCtrl: _passCtrl,
-                                    confirmCtrl: _confirmCtrl,
-                                    obscurePass: _obscurePass,
-                                    obscureConfirm: _obscureConfirm,
-                                    onTogglePass: () => setState(
-                                        () => _obscurePass = !_obscurePass),
-                                    onToggleConfirm: () => setState(() =>
-                                        _obscureConfirm = !_obscureConfirm),
-                                    nameValidator: _nameValidator,
-                                    emailValidator: _emailValidator,
-                                    passwordValidator: _passwordValidator,
-                                    phoneValidator: _phoneValidator,
-                                    onSubmit: _submit,
-                                  ),
-                          ),
-
-                          const SizedBox(height: 16),
-                          const Spacer(),
-                          FilledButton(
-                            onPressed: _submit,
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 20),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // App title / branding
+                      Text(
+                        'Modern Chat',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.2,
                             ),
-                            child:
-                                Text(_isSignIn ? 'Sign In' : 'Create Account'),
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Helper row
-                          Center(
-                            child: Wrap(
-                              alignment: WrapAlignment.center,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 6,
-                              children: [
-                                Text(
-                                  _isSignIn
-                                      ? "Don't have an account?"
-                                      : 'Already have an account?',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                          color: cs.onSurface
-                                              .withValues(alpha: 0.7)),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      setState(() => _isSignIn = !_isSignIn),
-                                  child: Text(
-                                      _isSignIn ? 'Create one' : 'Sign in'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _isSignIn
+                            ? 'Welcome back2 — let’s get you in'
+                            : 'Create your account to start chatting',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: cs.onSurface.withValues(alpha: 0.65),
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 22),
 
-                    const SizedBox(height: 18),
+                      // Glass card
+                      _GlassCard(
+                        child: ListView(
+                          children: [
+                            _ModeSwitch(
+                              isSignIn: _isSignIn,
+                              onChanged: (signIn) {
+                                setState(() => _isSignIn = signIn);
+                              },
+                            ),
+                            const SizedBox(height: 16),
 
-                    // Tiny footnote
-                    Text(
-                      'By continuing, you agree to our Terms & Privacy Policy',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onSurface.withValues(alpha: 0.5),
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                            // Animated forms
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 280),
+                              switchInCurve: Curves.easeOut,
+                              switchOutCurve: Curves.easeIn,
+                              transitionBuilder: (child, anim) {
+                                // Subtle fade + vertical slide
+                                final offsetTween = Tween<Offset>(
+                                  begin: const Offset(0, 0.06),
+                                  end: Offset.zero,
+                                );
+                                return FadeTransition(
+                                  opacity: anim,
+                                  child: SlideTransition(
+                                    position: anim.drive(offsetTween),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: _isSignIn
+                                  ? _SignInForm(
+                                      key: const ValueKey('sign-in'),
+                                      emailCtrl: _emailCtrl,
+                                      passCtrl: _passCtrl,
+                                      obscurePass: _obscurePass,
+                                      onToggleObscure: () => setState(
+                                          () => _obscurePass = !_obscurePass),
+                                      emailValidator: _emailValidator,
+                                      passwordValidator: _passwordValidator,
+                                      onSubmit: _submit,
+                                    )
+                                  : _SignUpForm(
+                                      key: const ValueKey('sign-up'),
+                                      nameCtrl: _nameCtrl,
+                                      emailCtrl: _emailCtrl,
+                                      phoneCtrl: _phoneNumber,
+                                      passCtrl: _passCtrl,
+                                      confirmCtrl: _confirmCtrl,
+                                      obscurePass: _obscurePass,
+                                      obscureConfirm: _obscureConfirm,
+                                      onTogglePass: () => setState(
+                                          () => _obscurePass = !_obscurePass),
+                                      onToggleConfirm: () => setState(() =>
+                                          _obscureConfirm = !_obscureConfirm),
+                                      nameValidator: _nameValidator,
+                                      emailValidator: _emailValidator,
+                                      passwordValidator: _passwordValidator,
+                                      phoneValidator: _phoneValidator,
+                                      onSubmit: _submit,
+                                    ),
+                            ),
+
+                            const SizedBox(height: 16),
+                            const Spacer(),
+                            FilledButton(
+                              onPressed: _submit,
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 20),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: Text(
+                                  _isSignIn ? 'Sign In' : 'Create Account'),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Helper row
+                            Center(
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 6,
+                                children: [
+                                  Text(
+                                    _isSignIn
+                                        ? "Don't have an account?"
+                                        : 'Already have an account?',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                            color: cs.onSurface
+                                                .withValues(alpha: 0.7)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        setState(() => _isSignIn = !_isSignIn),
+                                    child: Text(
+                                        _isSignIn ? 'Create one' : 'Sign in'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Tiny footnote
+                      Text(
+                        'By continuing, you agree to our Terms & Privacy Policy',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: cs.onSurface.withValues(alpha: 0.5),
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -459,6 +469,9 @@ class _SignInForm extends StatelessWidget {
               prefixIcon: Icon(Icons.alternate_email),
             ),
             validator: emailValidator,
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -476,6 +489,9 @@ class _SignInForm extends StatelessWidget {
             ),
             validator: passwordValidator,
             onFieldSubmitted: (_) => onSubmit(),
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
           const SizedBox(height: 8),
           Align(
@@ -547,6 +563,9 @@ class _SignUpForm extends StatelessWidget {
               prefixIcon: Icon(Icons.person_outline),
             ),
             validator: nameValidator,
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -559,6 +578,9 @@ class _SignUpForm extends StatelessWidget {
               prefixIcon: Icon(Icons.alternate_email),
             ),
             validator: emailValidator,
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -570,6 +592,9 @@ class _SignUpForm extends StatelessWidget {
               prefixIcon: Icon(Icons.phone),
             ),
             validator: phoneValidator,
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -586,6 +611,9 @@ class _SignUpForm extends StatelessWidget {
               ),
             ),
             validator: passwordValidator,
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -603,6 +631,9 @@ class _SignUpForm extends StatelessWidget {
             ),
             validator: passwordValidator,
             onFieldSubmitted: (_) => onSubmit(),
+            onTapOutside: (_) {
+              FocusScope.of(context).unfocus();
+            },
           ),
         ],
       ),
