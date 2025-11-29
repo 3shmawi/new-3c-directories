@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'intro/screens/display_user_profile.dart';
+import 'package:new_3c/screens/home.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -9,8 +8,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
       // home: DisplayDogImage(),
-      home: DisplayUserProfile(),
+      // home: DisplayUserProfile(),
+      home: HomeScreen(),
     );
   }
 }
