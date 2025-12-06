@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:new_3c/model/user_model.dart';
 
-import '../chat/chat.dart';
+import '../home/home_pag.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -79,7 +79,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
 
             Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
               builder: (context) {
-                return const ChatScreen();
+                return const HomePag();
               },
             ), (_) => false);
           } catch (error) {}
@@ -114,7 +114,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
 
           Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
             builder: (context) {
-              return const ChatScreen();
+              return const HomePag();
             },
           ), (_) => false);
         }

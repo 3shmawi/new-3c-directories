@@ -28,7 +28,7 @@ class MessageCtrl extends Cubit<MessageStates> {
   }
 
   ///send message
-  void sendMessage(String message) async {
+  void sendMessage(String message, {String? receiverId}) async {
     if (message.isEmpty) {
       emit(MessageErrorState("Enter a text"));
       return;
@@ -51,12 +51,33 @@ class MessageCtrl extends Cubit<MessageStates> {
     );
 
     try {
-      await fireStore
-          .collection("k_k_h")
-          .doc("#")
-          .collection("messages")
-          .doc(newId)
-          .set(newMessage.toJson());
+      if (receiverId == null) {
+        await fireStore
+            .collection("k_k_h")
+            .doc("#")
+            .collection("messages")
+            .doc(newId)
+            .set(newMessage.toJson());
+      } else {
+        await fireStore
+            .collection("k_k_h")
+            .doc("#")
+            .collection("messages")
+            .doc(auth.currentUser!.uid)
+            .collection("private_chat")
+            .doc(receiverId)
+            .collection("messages")
+            .add(newMessage.toJson());
+        await fireStore
+            .collection("k_k_h")
+            .doc("#")
+            .collection("messages")
+            .doc(receiverId)
+            .collection("private_chat")
+            .doc(auth.currentUser!.uid)
+            .collection("messages")
+            .add(newMessage.toJson());
+      }
       changeTypingValue(false);
 
       emit(MessageSuccessState());
@@ -66,29 +87,60 @@ class MessageCtrl extends Cubit<MessageStates> {
   }
 
   ///get message
-  Stream<List<Message>> getMessages() {
-    return fireStore
-        .collection("k_k_h")
-        .doc("#")
-        .collection("messages")
-        .orderBy('time', descending: true)
-        .snapshots()
-        .map((docs) {
-      return docs.docs.map((doc) {
-        return Message.fromJson(doc.data());
-      }).toList();
-    });
+  Stream<List<Message>> getMessages({String? receiverId}) {
+    if (receiverId == null) {
+      return fireStore
+          .collection("k_k_h")
+          .doc("#")
+          .collection("messages")
+          .orderBy('time', descending: true)
+          .snapshots()
+          .map((docs) {
+        return docs.docs.map((doc) {
+          return Message.fromJson(doc.data());
+        }).toList();
+      });
+    } else {
+      return fireStore
+          .collection("k_k_h")
+          .doc("#")
+          .collection("messages")
+          .doc(receiverId)
+          .collection("private_chat")
+          .doc(auth.currentUser!.uid)
+          .collection("messages")
+          .orderBy('time', descending: true)
+          .snapshots()
+          .map((docs) {
+        return docs.docs.map((doc) {
+          return Message.fromJson(doc.data());
+        }).toList();
+      });
+    }
   }
 
   void changeTypingValue(bool isTyping) {
-    fireStore
-        .collection("k_k_h")
-        .doc("#")
-        .collection("public_chat")
-        .doc("#")
-        .set({
-      "is_typing": isTyping,
-    }, SetOptions(merge: true));
+    final myId = auth.currentUser?.uid;
+    if (myId == null) throw "unauthenticated";
+    if (isTyping) {
+      fireStore
+          .collection("k_k_h")
+          .doc("#")
+          .collection("public_chat")
+          .doc("#")
+          .update({
+        "users_typing_ids": FieldValue.arrayUnion([myId]),
+      });
+    } else {
+      fireStore
+          .collection("k_k_h")
+          .doc("#")
+          .collection("public_chat")
+          .doc("#")
+          .update({
+        "users_typing_ids": FieldValue.arrayRemove([myId]),
+      });
+    }
   }
 
   Stream<bool> isTypingStream() {
@@ -99,7 +151,10 @@ class MessageCtrl extends Cubit<MessageStates> {
         .doc("#")
         .snapshots()
         .map((doc) {
-      return doc.data()?['is_typing'] ?? false;
+      final data = doc.data();
+      final usersIds = data?['users_typing_ids'] as List?;
+      usersIds?.remove(auth.currentUser?.uid);
+      return usersIds?.isNotEmpty == true;
     });
   }
 }
