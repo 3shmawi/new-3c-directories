@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/theme_ctrl.dart';
 
 class Display extends StatefulWidget {
   const Display({super.key});
@@ -20,6 +23,21 @@ class _DisplayState extends State<Display> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Display"),
+        actions: [
+          BlocBuilder<ThemeCubit, ThemeStates>(
+            builder: (context, isDark) {
+              final cubit = context.read<ThemeCubit>();
+              return IconButton(
+                onPressed: cubit.toggleTheme,
+                icon: Icon(
+                  cubit.isDark
+                      ? CupertinoIcons.sun_dust
+                      : Icons.dark_mode_outlined,
+                ),
+              );
+            },
+          )
+        ],
       ),
       body: FutureBuilder(
           future:
@@ -91,34 +109,61 @@ class _DisplayState extends State<Display> {
 
                       setState(() {});
                     },
-                    child: Column(
+                    child: Stack(
+                      alignment: Alignment.topRight,
                       children: [
-                        Text(
-                          post['title'],
+                        Card(
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Row(
+                              spacing: 13,
+                              children: [
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage:
+                                      NetworkImage(post["picture"]),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Title: ${post['title']}",
+                                      ),
+                                      Text(
+                                          "Author Name: ${post["authorName"]}"),
+                                      Text(
+                                          "Description: ${post["description"]}"),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        Text(post["authorName"]),
-                        Text(post["description"]),
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundImage: NetworkImage(post["picture"]),
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: IconButton(
+                              onPressed: () {
+                                titleCtrl.text = post['title'];
+                                descCtrl.text = post['description'];
+                                imgUrlCtrl.text = post['picture'];
+                                showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return createOrUpdatePost(
+                                        context,
+                                        postId: post['id'],
+                                      );
+                                    });
+                                setState(() {});
+                              },
+                              icon: Icon(Icons.edit)),
                         ),
-                        IconButton(
-                            onPressed: () {
-                              titleCtrl.text = post['title'];
-                              descCtrl.text = post['description'];
-                              imgUrlCtrl.text = post['picture'];
-                              showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return createOrUpdatePost(
-                                      context,
-                                      postId: post['id'],
-                                    );
-                                  });
-                              setState(() {});
-                            },
-                            icon: Icon(Icons.edit)),
-                        Divider(),
                       ],
                     ),
                   );
