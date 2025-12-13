@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:io';
+
 import '../models/story_model.dart';
 import 'storage_service.dart';
 
@@ -22,9 +24,9 @@ class StoryService {
     // Upload media
     String mediaUrl;
     if (mediaType == 'video') {
-      mediaUrl = await _storageService.uploadVideo(mediaFile, 'stories');
+      mediaUrl = await _storageService.uploadVideo(mediaFile, 'Omar/#/stories');
     } else {
-      mediaUrl = await _storageService.uploadImage(mediaFile, 'stories');
+      mediaUrl = await _storageService.uploadImage(mediaFile, 'Omar/#/stories');
     }
 
     // Create story
@@ -32,7 +34,7 @@ class StoryService {
     final expiresAt = now.add(const Duration(hours: 24));
 
     final storyId = _uuid.v4();
-    await _firestore.collection('stories').doc(storyId).set({
+    await _firestore.collection('Omar/#/stories').doc(storyId).set({
       'userId': currentUserId,
       'mediaUrl': mediaUrl,
       'mediaType': mediaType,
@@ -46,7 +48,7 @@ class StoryService {
   Stream<List<StoryModel>> getActiveStories() {
     final now = Timestamp.now();
     return _firestore
-        .collection('stories')
+        .collection('Omar/#/stories')
         .where('expiresAt', isGreaterThan: now)
         .orderBy('expiresAt', descending: false)
         .orderBy('createdAt', descending: true)
@@ -61,7 +63,7 @@ class StoryService {
   Stream<List<StoryModel>> getStoriesByUser(String userId) {
     final now = Timestamp.now();
     return _firestore
-        .collection('stories')
+        .collection('Omar/#/stories')
         .where('userId', isEqualTo: userId)
         .where('expiresAt', isGreaterThan: now)
         .orderBy('expiresAt', descending: false)
@@ -78,7 +80,7 @@ class StoryService {
     final currentUserId = _auth.currentUser?.uid;
     if (currentUserId == null) return;
 
-    await _firestore.collection('stories').doc(storyId).update({
+    await _firestore.collection('Omar/#/stories').doc(storyId).update({
       'seenBy': FieldValue.arrayUnion([currentUserId]),
     });
   }
@@ -87,7 +89,7 @@ class StoryService {
   Future<void> deleteExpiredStories() async {
     final now = Timestamp.now();
     final expiredStories = await _firestore
-        .collection('stories')
+        .collection('Omar/#/stories')
         .where('expiresAt', isLessThan: now)
         .get();
 
@@ -104,7 +106,7 @@ class StoryService {
   Stream<List<String>> getUsersWithStories() {
     final now = Timestamp.now();
     return _firestore
-        .collection('stories')
+        .collection('Omar/#/stories')
         .where('expiresAt', isGreaterThan: now)
         .snapshots()
         .map((snapshot) => snapshot.docs
@@ -113,4 +115,3 @@ class StoryService {
             .toList());
   }
 }
-

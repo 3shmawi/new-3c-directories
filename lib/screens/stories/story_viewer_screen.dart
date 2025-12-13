@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/story_service.dart';
-import '../../services/auth_service.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
+
 import '../../models/story_model.dart';
 import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
+import '../../services/story_service.dart';
 
 class StoryViewerScreen extends StatefulWidget {
   final List<StoryModel> stories;
@@ -40,7 +41,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
 
   Future<void> _loadUser() async {
     final doc = await FirebaseFirestore.instance
-        .collection('users')
+        .collection('Omar/#/users')
         .doc(widget.userId)
         .get();
     if (doc.exists) {
@@ -148,7 +149,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                           imageUrl: story.mediaUrl,
                           fit: BoxFit.contain,
                           placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(color: Colors.white),
+                            child:
+                                CircularProgressIndicator(color: Colors.white),
                           ),
                           errorWidget: (context, url, error) => const Center(
                             child: Icon(Icons.error, color: Colors.white),
@@ -229,4 +231,3 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
     );
   }
 }
-

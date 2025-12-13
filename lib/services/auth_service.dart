@@ -1,5 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../models/user_model.dart';
 
 class AuthService {
@@ -14,7 +15,7 @@ class AuthService {
     final user = currentUser;
     if (user == null) return null;
 
-    final doc = await _firestore.collection('users').doc(user.uid).get();
+    final doc = await _firestore.collection('Omar/#/users').doc(user.uid).get();
     if (!doc.exists) return null;
 
     return UserModel.fromMap(doc.data()!, doc.id);
@@ -55,7 +56,7 @@ class AuthService {
     required String name,
     String? profileImageUrl,
   }) async {
-    await _firestore.collection('users').doc(userId).set({
+    await _firestore.collection('Omar/#/users').doc(userId).set({
       'name': name,
       'email': _auth.currentUser?.email ?? '',
       'profileImageUrl': profileImageUrl,
@@ -75,7 +76,7 @@ class AuthService {
     if (profileImageUrl != null) updates['profileImageUrl'] = profileImageUrl;
 
     if (updates.isNotEmpty) {
-      await _firestore.collection('users').doc(user.uid).update(updates);
+      await _firestore.collection('Omar/#/users').doc(user.uid).update(updates);
     }
   }
 
@@ -83,4 +84,3 @@ class AuthService {
     await _auth.signOut();
   }
 }
-

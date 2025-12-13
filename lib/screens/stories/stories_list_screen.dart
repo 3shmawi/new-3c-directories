@@ -27,8 +27,10 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   Future<void> _loadUser(String userId) async {
     if (_users.containsKey(userId)) return;
 
-    final doc =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('Omar/#/users')
+        .doc(userId)
+        .get();
     if (doc.exists) {
       setState(() {
         _users[userId] = UserModel.fromMap(

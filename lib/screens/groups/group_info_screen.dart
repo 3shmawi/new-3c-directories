@@ -1,10 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/auth_service.dart';
-import '../../services/chat_service.dart';
+
 import '../../models/group_model.dart';
 import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
+import '../../services/chat_service.dart';
 import '../chat/chat_list_screen.dart';
 
 class GroupInfoScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   Future<void> _loadMembers(List<String> memberIds) async {
     for (final memberId in memberIds) {
       final doc = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('Omar/#/users')
           .doc(memberId)
           .get();
       if (doc.exists) {
@@ -194,10 +195,9 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
 
                           return ListTile(
                             leading: CircleAvatar(
-                              backgroundImage:
-                                  member?.profileImageUrl != null
-                                      ? NetworkImage(member!.profileImageUrl!)
-                                      : null,
+                              backgroundImage: member?.profileImageUrl != null
+                                  ? NetworkImage(member!.profileImageUrl!)
+                                  : null,
                               child: member?.profileImageUrl == null
                                   ? const Icon(Icons.person)
                                   : null,
@@ -243,4 +243,3 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     );
   }
 }
-

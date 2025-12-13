@@ -105,7 +105,7 @@ class ChatListScreen extends StatelessWidget {
                     chat.participants.firstWhere((id) => id != currentUserId);
                 return FutureBuilder<DocumentSnapshot>(
                   future: FirebaseFirestore.instance
-                      .collection('users')
+                      .collection('Omar/#/users')
                       .doc(otherUserId)
                       .get(),
                   builder: (context, userSnapshot) {

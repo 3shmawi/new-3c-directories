@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+
 import '../models/chat_model.dart';
-import '../models/message_model.dart';
 import '../models/group_model.dart';
+import '../models/message_model.dart';
 import 'storage_service.dart';
-import 'dart:io';
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -20,7 +22,7 @@ class ChatService {
 
     // Check if chat already exists
     final existingChats = await _firestore
-        .collection('chats')
+        .collection('Omar/#/chats')
         .where('type', isEqualTo: 'personal')
         .where('participants', arrayContains: currentUserId)
         .get();
@@ -35,7 +37,7 @@ class ChatService {
 
     // Create new chat
     final chatId = _uuid.v4();
-    await _firestore.collection('chats').doc(chatId).set({
+    await _firestore.collection('Omar/#/chats').doc(chatId).set({
       'type': 'personal',
       'participants': [currentUserId, otherUserId],
       'lastMessage': null,
@@ -59,10 +61,10 @@ class ChatService {
       'type': 'text',
     };
 
-    await _firestore.collection('messages').doc(messageId).set(message);
+    await _firestore.collection('Omar/#/messages').doc(messageId).set(message);
 
     // Update chat last message
-    await _firestore.collection('chats').doc(chatId).update({
+    await _firestore.collection('Omar/#/chats').doc(chatId).update({
       'lastMessage': text,
       'lastMessageTime': FieldValue.serverTimestamp(),
     });
@@ -74,7 +76,8 @@ class ChatService {
     if (currentUserId == null) throw Exception('User not authenticated');
 
     // Upload image
-    final imageUrl = await _storageService.uploadImage(imageFile, 'messages');
+    final imageUrl =
+        await _storageService.uploadImage(imageFile, 'Omar/#/messages');
 
     final messageId = _uuid.v4();
     final message = {
@@ -86,10 +89,10 @@ class ChatService {
       'imageUrl': imageUrl,
     };
 
-    await _firestore.collection('messages').doc(messageId).set(message);
+    await _firestore.collection('Omar/#/messages').doc(messageId).set(message);
 
     // Update chat last message
-    await _firestore.collection('chats').doc(chatId).update({
+    await _firestore.collection('Omar/#/chats').doc(chatId).update({
       'lastMessage': '📷 Image',
       'lastMessageTime': FieldValue.serverTimestamp(),
     });
@@ -98,7 +101,7 @@ class ChatService {
   // Get messages stream
   Stream<List<MessageModel>> getMessages(String chatId) {
     return _firestore
-        .collection('messages')
+        .collection('Omar/#/messages')
         .where('chatId', isEqualTo: chatId)
         .orderBy('timestamp', descending: false)
         .snapshots()
@@ -113,7 +116,7 @@ class ChatService {
     if (currentUserId == null) return Stream.value([]);
 
     return _firestore
-        .collection('chats')
+        .collection('Omar/#/chats')
         .where('participants', arrayContains: currentUserId)
         .orderBy('lastMessageTime', descending: true)
         .snapshots()
@@ -135,7 +138,7 @@ class ChatService {
     String? imageUrl;
 
     if (imageFile != null) {
-      imageUrl = await _storageService.uploadImage(imageFile, 'groups');
+      imageUrl = await _storageService.uploadImage(imageFile, 'Omar/#/groups');
     }
 
     // Create group document
@@ -148,10 +151,13 @@ class ChatService {
       createdAt: DateTime.now(),
     );
 
-    await _firestore.collection('groups').doc(groupId).set(group.toMap());
+    await _firestore
+        .collection('Omar/#/groups')
+        .doc(groupId)
+        .set(group.toMap());
 
     // Create chat for group
-    await _firestore.collection('chats').doc(groupId).set({
+    await _firestore.collection('Omar/#/chats').doc(groupId).set({
       'type': 'group',
       'participants': group.members,
       'lastMessage': null,
@@ -168,29 +174,29 @@ class ChatService {
 
   // Get group
   Future<GroupModel?> getGroup(String groupId) async {
-    final doc = await _firestore.collection('groups').doc(groupId).get();
+    final doc = await _firestore.collection('Omar/#/groups').doc(groupId).get();
     if (!doc.exists) return null;
     return GroupModel.fromMap(doc.data()!, doc.id);
   }
 
   // Add member to group
   Future<void> addMemberToGroup(String groupId, String userId) async {
-    await _firestore.collection('groups').doc(groupId).update({
+    await _firestore.collection('Omar/#/groups').doc(groupId).update({
       'members': FieldValue.arrayUnion([userId]),
     });
 
-    await _firestore.collection('chats').doc(groupId).update({
+    await _firestore.collection('Omar/#/chats').doc(groupId).update({
       'participants': FieldValue.arrayUnion([userId]),
     });
   }
 
   // Remove member from group
   Future<void> removeMemberFromGroup(String groupId, String userId) async {
-    await _firestore.collection('groups').doc(groupId).update({
+    await _firestore.collection('Omar/#/groups').doc(groupId).update({
       'members': FieldValue.arrayRemove([userId]),
     });
 
-    await _firestore.collection('chats').doc(groupId).update({
+    await _firestore.collection('Omar/#/chats').doc(groupId).update({
       'participants': FieldValue.arrayRemove([userId]),
     });
   }
@@ -209,12 +215,10 @@ class ChatService {
     if (currentUserId == null) return Stream.value([]);
 
     return _firestore
-        .collection('users')
+        .collection('Omar/#/users')
         .where(FieldPath.documentId, isNotEqualTo: currentUserId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
   }
 }
-

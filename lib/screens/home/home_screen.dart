@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../chat/chat_list_screen.dart';
-import '../stories/stories_list_screen.dart';
 import '../groups/create_group_screen.dart';
+import '../profile/profile_screen.dart';
+import '../stories/stories_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const ChatListScreen(),
     const StoriesListScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -38,6 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.auto_stories),
             label: 'Stories',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
       floatingActionButton: _currentIndex == 0
@@ -55,4 +62,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
