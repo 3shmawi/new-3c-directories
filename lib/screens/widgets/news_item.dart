@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../helpers/web_network_images.dart';
+
 class NewsItem extends StatelessWidget {
   const NewsItem({super.key});
 
@@ -15,12 +17,14 @@ class NewsItem extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Image(image: NetworkImage("")),
           //image
-          Image.asset(
-            "assets/images/testt.png",
+          SizedBox(
             height: 150,
             width: double.infinity,
-            fit: BoxFit.cover,
+            child: WebImageWidget(
+              "assets/images/testt.png",
+            ),
           ),
 
           Padding(
