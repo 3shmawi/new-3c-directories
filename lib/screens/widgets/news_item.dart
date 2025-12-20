@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../helpers/web_network_images.dart';
 
 class NewsItem extends StatelessWidget {
-  const NewsItem({super.key});
+  const NewsItem({this.description,super.key});
+  final String? description;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,7 @@ class NewsItem extends StatelessWidget {
             padding: const EdgeInsets.all(12.0),
             child: Column(
               spacing: 8,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 //title
                 Text(
@@ -40,6 +42,7 @@ class NewsItem extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: Colors.black,
                   ),
                 ), //profile info
                 Row(
@@ -59,7 +62,7 @@ class NewsItem extends StatelessWidget {
                 ),
                 //desc
                 Text(
-                  "Description laskdjflaskd fa;lskd fjlaskdf jlaskdjf laskjf laskdfj;laskd fjlaskdfj alsdkfj laskdfj alskdjf l;asdkjf al;sdkjf laskdjf las;kdjf lasdkjf l;askdjf l;asdkjf la;skdjf als;dfjkasljf ",
+                  description??"Description laskdjflaskd fa;lskd fjlaskdf jlaskdjf laskjf laskdfj;laskd fjlaskdfj alsdkfj laskdfj alskdjf l;asdkjf al;sdkjf laskdjf las;kdjf lasdkjf l;askdjf l;asdkjf la;skdjf als;dfjkasljf ",
                   maxLines: 3,
                   style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 )
