@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_3c/controller/theme_ctrl.dart';
 
 class AppBarPart extends StatelessWidget implements PreferredSizeWidget {
   const AppBarPart({super.key});
@@ -33,6 +35,20 @@ class AppBarPart extends StatelessWidget implements PreferredSizeWidget {
           icon: Icon(
             Icons.search,
           ),
+        ),
+
+        BlocBuilder<ThemeCtrl, bool>(
+          builder: (context, isDark) {
+            final ctrl = context.read<ThemeCtrl>();
+            return IconButton(
+              onPressed: () {
+                ctrl.toggleTheme();
+              },
+              icon: Icon(
+               isDark? Icons.sunny: Icons.dark_mode_outlined,
+              ),
+            );
+          },
         ),
       ],
     );

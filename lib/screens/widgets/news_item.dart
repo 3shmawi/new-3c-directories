@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/models/post_model.dart';
 
 import '../../helpers/web_network_images.dart';
 
 class NewsItem extends StatelessWidget {
-  const NewsItem({this.description,super.key});
-  final String? description;
+  const NewsItem({required this.postModel,super.key});
+  final PostModel postModel;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.all(10),
-      color: Colors.grey[300],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -18,13 +18,12 @@ class NewsItem extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image(image: NetworkImage("")),
           //image
           SizedBox(
             height: 150,
             width: double.infinity,
             child: WebImageWidget(
-              "assets/images/testt.png",
+              postModel.picture??"assets/images/testt.png",
             ),
           ),
 
@@ -36,13 +35,12 @@ class NewsItem extends StatelessWidget {
               children: [
                 //title
                 Text(
-                  "Title laskdjflas dkflaksd jf;laskdfj ;alskdfjalskdf lasdkfj laskdjf lasdkf laskd jfl;askjd lfkasdfj laskdfj ;laskdfj; alskdfj;laskdfj a;lsdfk ",
+                  postModel.title??"No title",
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: Colors.black,
                   ),
                 ), //profile info
                 Row(
@@ -53,7 +51,7 @@ class NewsItem extends StatelessWidget {
                       backgroundColor: Colors.black,
                     ),
                     Text(
-                      "Jana",
+                      postModel.authorName??"None",
                       style: TextStyle(
                         color: Colors.grey,
                       ),
@@ -62,7 +60,7 @@ class NewsItem extends StatelessWidget {
                 ),
                 //desc
                 Text(
-                  description??"Description laskdjflaskd fa;lskd fjlaskdf jlaskdjf laskjf laskdfj;laskd fjlaskdfj alsdkfj laskdfj alskdjf l;asdkjf al;sdkjf laskdjf las;kdjf lasdkjf l;askdjf l;asdkjf la;skdjf als;dfjkasljf ",
+                  postModel.description??"No description",
                   maxLines: 3,
                   style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 )

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:new_3c/models/post_model.dart';
 import 'package:new_3c/screens/widgets/app_bar_part.dart';
 import 'package:new_3c/screens/widgets/news_item.dart';
 import 'package:new_3c/services/dio_helper.dart';
@@ -9,10 +10,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBarPart(),
-      body: FutureBuilder(
-          future: APIRequestsHelper().get("posts"),
+      body: FutureBuilder<List<PostModel>>(
+          future: getPosts(),
           builder: (context, asyncData) {
             //loading
             if (asyncData.connectionState == ConnectionState.waiting) {
@@ -27,18 +27,26 @@ class HomeScreen extends StatelessWidget {
 
             final posts = asyncData.data;
 
-            if(posts is List? && ( posts == null || posts.isEmpty)){
+            if (posts == null || posts.isEmpty) {
               return const Center(child: Text("No Data"));
             }
 
-            final postsList = posts as List;
             return ListView.builder(
               itemBuilder: (context, index) => NewsItem(
-                description: postsList[index]?['description'],
+                postModel: posts[index],
               ),
-              itemCount: postsList.length,
+              itemCount: posts.length,
             );
           }),
     );
+  }
+
+  Future<List<PostModel>> getPosts() async {
+    final response = await APIRequestsHelper().get("posts");
+    if (response is List) {
+      return response.map((e) => PostModel.fromJson(e)).toList();
+    }
+
+    return [];
   }
 }
