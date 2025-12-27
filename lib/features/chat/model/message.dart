@@ -21,6 +21,7 @@ class Message {
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
+    print(json);
     return Message(
       id: json['id'],
       text: json['text'],

@@ -113,7 +113,22 @@ class MessageCtrl extends Cubit<MessageStates> {
           .snapshots()
           .map((docs) {
         return docs.docs.map((doc) {
-          return Message.fromJson(doc.data());
+          final message = Message.fromJson(doc.data());
+          if (message.senderId != auth.currentUser!.uid) {
+            fireStore
+                .collection("k_k_h")
+                .doc("#")
+                .collection("messages")
+                .doc(receiverId)
+                .collection("private_chat")
+                .doc(auth.currentUser!.uid)
+                .collection("messages")
+                .doc(doc.id)
+                .update({
+              "seen": true,
+            });
+          }
+          return message;
         }).toList();
       });
     }
@@ -156,8 +171,7 @@ class MessageCtrl extends Cubit<MessageStates> {
       usersIds?.remove(auth.currentUser?.uid);
       return usersIds?.isNotEmpty == true;
     });
-  }
-}
+  }}
 
 abstract class MessageStates {}
 
