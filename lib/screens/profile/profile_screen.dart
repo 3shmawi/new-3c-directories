@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text("Profile"),
         centerTitle: false,
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.edit))],
@@ -49,14 +50,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text("No data, please setup your profile"),
                     ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                                builder: (context) => ProfileSetupScreen()),
-                            (_) => false,
-                          );
-                        },
-                        child: Text("Complete profile"),),
+                      onPressed: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (context) => ProfileSetupScreen()),
+                          (_) => false,
+                        );
+                      },
+                      child: Text("Complete profile"),
+                    ),
                     Card(
                       color: Colors.red,
                       child: ListTile(
@@ -65,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                                 builder: (context) => LoginScreen()),
-                                (_) => false,
+                            (_) => false,
                           );
                         },
                         title: Center(

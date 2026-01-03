@@ -169,6 +169,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Stories'),
         actions: [
           IconButton(
@@ -225,7 +226,6 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                     ),
                   );
                 }
-
                 // Group stories by user
                 final Map<String, List<StoryModel>> storiesByUser = {};
                 for (final story in stories) {
@@ -234,40 +234,157 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                   }
                   storiesByUser[story.userId]!.add(story);
                 }
-
-                return ListView(
-                  scrollDirection: Axis.horizontal,
+                return GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  children: storiesByUser.entries.map((entry) {
-                    final userId = entry.key;
-                    final userStories = entry.value;
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: .7,
+                  ),
+                  itemCount: storiesByUser.isEmpty ? 1 : storiesByUser.length,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      final myStories = storiesByUser[currentUserId];
+                      if (myStories == null || myStories.isEmpty) {
+                        return InkWell(
+                          onTap: _createStory,
+                          child: DottedBorder(
+                            childOnTop: true,
+                            options: RoundedRectDottedBorderOptions(
+                              radius: Radius.circular(10),
+                              color: Colors.cyan,
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.add_circle,
+                                    size: 80,
+                                    color: Colors.grey,
+                                  ),
+                                  Text("Add your story")
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return Card(
+                        clipBehavior: Clip.hardEdge,
+                        child: StoryItem(
+                          stories: myStories,
+                          userName: "Your Story",
+                        ),
+                      );
+                    }
+
+                    storiesByUser.remove(currentUserId);
+                    final userId = storiesByUser.keys.elementAt(index - 1);
+                    final userStories = storiesByUser[userId]!;
                     _loadUser(userId);
 
                     final user = _users[userId];
                     final userName = user?.name ?? 'Unknown';
                     final userImageUrl = user?.profileImageUrl;
 
-                    return StoryItem(
-                      story: userStories.first,
-                      userName: userId == currentUserId
-                          ? 'Your Story (${userStories.length})'
-                          : userName,
-                      userImageUrl: userImageUrl,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => StoryViewerScreen(
-                              stories: userStories,
-                              initialIndex: 0,
-                              userId: userId,
-                            ),
-                          ),
-                        );
-                      },
+                    return Card(
+                      clipBehavior: Clip.hardEdge,
+                      child: StoryItem(
+                        stories: userStories,
+                        userName: userName,
+                      ),
                     );
-                  }).toList(),
+                  },
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class StoryItem extends StatelessWidget {
+  const StoryItem({required this.stories, required this.userName, super.key});
+
+  final List<StoryModel> stories;
+  final String userName;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => StoryViewerScreen(
+              stories: stories,
+              initialIndex: 0,
+              userId: stories.first.userId,
+            ),
+          ),
+        );
+      },
+      child: Stack(
+        alignment: AlignmentGeometry.bottomCenter,
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              stories.first.mediaUrl,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            left: 0,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(5),
+              color: Colors.black38,
+              child: Text(
+                userName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 3,
+            left: 3,
+            child: Text(
+              stories.length.toString(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 3,
+            right: 3,
+            child: Text(
+              "now",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black,
+                  ),
+                ],
+              ),
             ),
           ),
         ],

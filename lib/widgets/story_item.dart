@@ -60,12 +60,12 @@ class StoryItem extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             SizedBox(
-              width: 70,
+              width: 75,
               child: Text(
                 userName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 11),
                 textAlign: TextAlign.center,
               ),
             ),
