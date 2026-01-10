@@ -56,7 +56,7 @@ class _DisplayUserProfileState extends State<DisplayUserProfile> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                   ),
-                  child: WebImageWidget(
+                  child: Image.network(
                     userProfile['picture']['large'],
                   ),
                 ),

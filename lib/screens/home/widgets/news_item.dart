@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:new_3c/models/post_model.dart';
 
-import '../../helpers/web_network_images.dart';
-
 class NewsItem extends StatelessWidget {
   const NewsItem({required this.postModel,super.key});
   final PostModel postModel;
@@ -22,8 +20,9 @@ class NewsItem extends StatelessWidget {
           SizedBox(
             height: 150,
             width: double.infinity,
-            child: WebImageWidget(
+            child: Image.network(
               postModel.picture??"assets/images/testt.png",
+              fit: BoxFit.cover,
             ),
           ),
 

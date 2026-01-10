@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_3c/controller/theme_ctrl.dart';
-import 'package:new_3c/screens/home.dart';
+import 'package:new_3c/screens/home/home.dart';
+import 'package:new_3c/screens/posts_with_SM/posts_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
             themeMode: isDark ? ThemeMode.dark :ThemeMode.light,
             // home: DisplayDogImage(),
             // home: DisplayUserProfile(),
-            home: HomeScreen(),
+            home: PostsHomeScreen(),
           );
         },
       ),

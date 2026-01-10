@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:new_3c/models/post_model.dart';
-import 'package:new_3c/screens/widgets/app_bar_part.dart';
-import 'package:new_3c/screens/widgets/news_item.dart';
+import 'package:new_3c/screens/counter/counter_screen.dart';
+import 'widgets/app_bar_part.dart';
+import 'widgets/news_item.dart';
 import 'package:new_3c/services/dio_helper.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -38,6 +39,16 @@ class HomeScreen extends StatelessWidget {
               itemCount: posts.length,
             );
           }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => CounterScreen(),
+            ),
+          );
+        },
+        child: Icon(Icons.calculate_outlined),
+      ),
     );
   }
 

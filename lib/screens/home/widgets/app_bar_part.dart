@@ -7,6 +7,7 @@ class AppBarPart extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<ThemeCtrl>();
     return AppBar(
       title: Text.rich(
         TextSpan(
@@ -36,19 +37,13 @@ class AppBarPart extends StatelessWidget implements PreferredSizeWidget {
             Icons.search,
           ),
         ),
-
-        BlocBuilder<ThemeCtrl, bool>(
-          builder: (context, isDark) {
-            final ctrl = context.read<ThemeCtrl>();
-            return IconButton(
-              onPressed: () {
-                ctrl.toggleTheme();
-              },
-              icon: Icon(
-               isDark? Icons.sunny: Icons.dark_mode_outlined,
-              ),
-            );
+        IconButton(
+          onPressed: () {
+            cubit.toggleTheme();
           },
+          icon: Icon(
+            cubit.state ? Icons.sunny : Icons.dark_mode_outlined,
+          ),
         ),
       ],
     );

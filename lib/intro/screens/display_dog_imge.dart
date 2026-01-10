@@ -128,7 +128,7 @@ class _DisplayDogImageState extends State<DisplayDogImage> {
                           (index) => Center(
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              child: WebImageWidget(imagesUrl[index]),
+                              child: Image.network(imagesUrl[index]),
                             ),
                           ),
                         ),
@@ -156,7 +156,7 @@ class _DisplayDogImageState extends State<DisplayDogImage> {
                                 child: Transform.rotate(
                                     angle: 3.14159, // 180 degrees in radians
 
-                                    child: WebImageWidget(imagesUrl[index])),
+                                    child: Image.network(imagesUrl[index])),
                               ),
                             ),
                           ),
